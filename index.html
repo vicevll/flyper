@@ -473,9 +473,9 @@
 
         /* FLYPER Logo Styles */
         .flyper-logo {
-            width: 120px;
+            width: 80px; /* Reducido de 120px */
             height: auto;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             transition: transform 0.3s ease, filter 0.3s ease;
         }
 
@@ -494,18 +494,72 @@
             transform: scale(1.03);
         }
 
+        /* Decorative Elements */
+        .decorative-bg-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .decorative-circle {
+            position: absolute;
+            width: 80vh; /* Aumentado para que sea dominante */
+            height: 80vh;
+            max-width: 90vw;
+            max-height: 90vw;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(0, 119, 182, 0.05));
+            backdrop-filter: blur(80px);
+            -webkit-backdrop-filter: blur(80px);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 100px rgba(14, 165, 233, 0.1);
+        }
+
+        /* Noise effect */
+        .decorative-circle::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            border-radius: 50%;
+        }
+
+        html.dark .decorative-circle {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(0, 119, 182, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
         /* Responsive sizing */
         @media (max-width: 768px) {
             .flyper-logo {
-                width: 100px;
-                margin-bottom: 2.5rem;
+                width: 70px;
+            }
+            .decorative-circle {
+                width: 400px;
+                height: 400px;
             }
         }
 
         @media (max-width: 576px) {
             .flyper-logo {
-                width: 75px;
-                margin-bottom: 2rem;
+                width: 60px;
+            }
+            .decorative-circle {
+                width: 300px;
+                height: 300px;
             }
         }
 
@@ -604,9 +658,15 @@
         </div>
 
         <!-- PANTALLA 1: PLANIFICADOR (VUELO) -->
-        <div id="screen-planner" class="active-screen flex flex-col items-center justify-center p-4 h-full bg-gray-100 dark:bg-gray-950 transition-colors duration-300">
+        <div id="screen-planner" class="active-screen flex flex-col items-center justify-center p-4 h-full bg-gray-100 dark:bg-gray-950 transition-colors duration-300 overflow-hidden">
+            
+            <!-- DECORACIÓN DE FONDO -->
+            <div class="decorative-bg-container">
+                <div class="decorative-circle"></div>
+            </div>
+
             <!-- Logo FLYPER -->
-            <div class="flyper-logo">
+            <div class="flyper-logo relative z-10">
                 <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+Cjxzdmcgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDE2NjcgMTg5NSIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxuczpzZXJpZj0iaHR0cDovL3d3dy5zZXJpZi5jb20vIiBzdHlsZT0iZmlsbC1ydWxlOmV2ZW5vZGQ7Y2xpcC1ydWxlOmV2ZW5vZGQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjI7Ij4KICAgIDxnIHRyYW5zZm9ybT0ibWF0cml4KDEsMCwwLDEsLTE2Ni42NTY2MjQsLTE3LjYzMTM0OSkiPgogICAgICAgIDxnIHRyYW5zZm9ybT0ibWF0cml4KDYuNDI2NTgyLDAsMCw2LjQyNjU4MiwtMTM0Ljg1NDMwMSwtMjQwLjg5MTY4OCkiPgogICAgICAgICAgICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLjMwOTUsMCwwLDEuMzA5NSwtNDg2LjAxNTc4MSwtMTE0OC4wNjc3ODgpIj4KICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik00NzIuMDc1LDk5OS4wNDdDNDY3LjE5LDk5OC43MDEgNDYzLDk5Ny45ODggNDU5LjQyOSw5OTcuMDA2QzQ0OC41NjUsOTk0LjAyMSA0NDEuOTc2LDk4OC41MjcgNDM4LjAxMSw5ODIuNDA0QzQzMC44NjcsOTcxLjM3MyA0MzIuMTYzLDk1Ni41OSA0MzguMzM2LDk0NC4wOTNDNDQ0LjMwNiw5MzIuMDA3IDQ1NC42MjksOTIzLjA5IDQ2MC44NzYsOTIxLjEwOEM0NzIuMTg1LDkxNy41MiA0ODEuMDc1LDkxOC44MzIgNDg3Ljg4NCw5MjIuNTc1QzQ5Ny4yNDYsOTI3LjcyMiA1MDMuODQ1LDkzOC43OTEgNTA1LjM0OCw5NTQuOTI4QzUwNS43MTMsOTU4Ljg1OCA1MDUuNzkxLDk2My4xNTggNTA1LjYsOTY3Ljc1QzUwNi41MzYsOTY3LjU2NSA1MDcuNDg2LDk2Ny4zNzIgNTA4LjQ1Miw5NjcuMTdDNTQwLjk4Myw5NjAuMzYzIDU1MS44NDEsOTQxLjE5NiA1NTguNDAyLDkzMi4wMjlMNTY2LjcsOTIwLjQzNEw1ODkuODkxLDkzNy4wMzJMNTgxLjU5Miw5NDguNjI3QzU3Mi44MDcsOTYwLjkwMiA1NTcuODUzLDk4NS45NjkgNTE0LjI5Miw5OTUuMDg0QzUwOS44MDksOTk2LjAyMiA1MDUuNTc5LDk5Ni43ODYgNTAxLjU5LDk5Ny4zOTNDNDk4LjY0NCwxMDExLjI5NiA0OTQuMjI0LDEwMjYuMTM5IDQ4OC42ODMsMTA0MC42NUM0NzYuNzUxLDEwNzEuOTAzIDQ1OS42NzQsMTEwMS40OTkgNDQyLjQyNCwxMTE3LjI4Mkw0MzEuOTA0LDExMjYuOTA4TDQxMi42NTMsMTEwNS44NjhMNDIzLjE3MywxMDk2LjI0MkM0NDMuNzEzLDEwNzcuNDQ4IDQ2My4xMiwxMDM1LjQ1OSA0NzIuMDc1LDk5OS4wNDdaTTQ3Ni45MDcsOTcwLjc4NUM0NzcuNTM1LDk2My4wMjIgNDc3LjM0NSw5NTYuMjMzIDQ3NS43NzQsOTUxLjAzMUM0NzUuMzQsOTQ5LjU5NSA0NzQuOTk1LDk0OC4yOTEgNDc0LjA5LDk0Ny41MzFDNDczLjgwNCw5NDcuMjkxIDQ3My4zOSw5NDcuNTEzIDQ3Mi45MjksOTQ3LjU0OUM0NzIuMTM5LDk0Ny42MTIgNDcxLjMwMiw5NDcuNzc3IDQ3MC40MTEsOTQ4LjAyMUM0NjkuNTQ5LDk0OC45NTEgNDY1LjU5LDk1My4zMTIgNDYzLjkwNSw5NTYuNzI0QzQ2Mi4yNzMsOTYwLjAyOCA0NjAuMzE5LDk2My43MTkgNDYxLjg2Niw5NjYuNzU5QzQ2Mi41MDksOTY4LjAyNSA0NjQuMDY3LDk2OC41OTQgNDY2LjEwNCw5NjkuMjQ2QzQ2OC45ODgsOTcwLjE2OCA0NzIuNTU5LDk3MC42NjcgNDc2LjkwNyw5NzAuNzg1WiIgc3R5bGU9ImZpbGw6cmdiKDAsMTE5LDE4Mik7Ii8+CiAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMDk1LDAsMCwxLjMwOTUsLTQ4Ni4wMTU3ODEsLTExNDguMDY3Nzg4KSI+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNDgyLjgyNCwxMDUzLjc0NEw0NjguNjkxLDEwNTUuNjM0TDQ2NC45MSwxMDI3LjM2OEw0NzkuMDQzLDEwMjUuNDc3QzQ4Mi42MjgsMTAyNC45OTcgNDg3LjUxOSwxMDI1LjM0OCA0OTMuNTE0LDEwMjUuOTc0QzUwOS4zMjUsMTAyNy42MjcgNTM2LjYzOSwxMDI5LjQyNiA1NjguMTY4LDk5MC45NjFMNTc3LjIwNyw5NzkuOTMzTDU5OS4yNjMsOTk4LjAxMUw1OTAuMjI0LDEwMDkuMDM5QzU1My40NTgsMTA1My44OTMgNTIwLjM4LDEwNTYuNDE1IDQ5OC42NjEsMTA1NS4wNTFDNDkxLjczOSwxMDU0LjYxNiA0ODYuMzM4LDEwNTMuMjczIDQ4Mi44MjQsMTA1My43NDRaIiBzdHlsZT0iZmlsbDpyZ2IoMCwxMTksMTgyKTsiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+Cg==" alt="FLYPER Logo" loading="lazy">
             </div>
 
@@ -881,6 +941,26 @@
                             <h3 class="font-bold text-gray-800 dark:text-white text-base">Plan de Vuelo</h3>
                             <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
                         </div>
+                        
+                        <!-- AGREGAR TAREA EN VUELO -->
+                        <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
+                            <div class="flex flex-col gap-2">
+                                <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
+                                    class="w-full bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white">
+                                <div class="flex gap-2 items-center">
+                                    <div class="flex-1 flex items-center gap-2 bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5">
+                                        <span class="text-[10px] text-gray-400 font-bold uppercase">Tiempo:</span>
+                                        <input type="number" id="flight-task-percent" value="10" min="1" max="100" 
+                                            class="w-full bg-transparent outline-none text-xs dark:text-white">
+                                        <span class="text-xs text-gray-400">%</span>
+                                    </div>
+                                    <button onclick="addTaskInFlight()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                        <i class="fa-solid fa-plus mr-1"></i> Añadir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="flight-tasks-container" class="space-y-2">
                             <!-- Lista inyectada dinámicamente -->
                         </div>
@@ -1021,6 +1101,26 @@
                     </button>
                     <button onclick="executeCancellation()" class="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">
                         Terminar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL TAREAS COMPLETADAS (NUEVO) -->
+        <div id="tasks-done-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-gray-200 dark:border-gray-700">
+                <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600 dark:text-green-400">
+                    <i class="fa-solid fa-check-double text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">¡Tareas Finalizadas!</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Has completado todas tus tareas. ¿Deseas terminar el vuelo ahora y ver tu resumen?</p>
+                
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('tasks-done-modal').classList.add('hidden')" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        Seguir Volando
+                    </button>
+                    <button onclick="executeCancellation()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">
+                        Terminar Vuelo
                     </button>
                 </div>
             </div>
@@ -1357,7 +1457,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-mono text-gray-500">${task.percent}%</span>
                             <button onclick="toggleTaskEditMenu('${task.id}')" class="text-gray-400 hover:text-blue-500 p-1">
-                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                <i class="fa-solid fa-chevron-down transition-transform duration-300" id="chevron-${task.id}"></i>
                             </button>
                         </div>
                     </div>
@@ -1378,12 +1478,50 @@
                 `;
                 container.appendChild(el);
             });
+
+            checkTasksStatus();
+        }
+
+        function addTaskInFlight() {
+            const input = document.getElementById('flight-task-input');
+            const pctInput = document.getElementById('flight-task-percent');
+            const title = input.value.trim();
+            const pct = parseInt(pctInput.value) || 0;
+
+            if (!title) return;
+
+            // Validar límite de 100%
+            const currentTotal = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
+            if (currentTotal + pct > 100) {
+                showError("Límite de Tiempo", "No puedes añadir esta tarea porque superaría el 100% del tiempo de vuelo.");
+                return;
+            }
+
+            const newTask = {
+                id: Date.now().toString(),
+                title: title,
+                percent: pct,
+                completed: false
+            };
+            trip.tasks.push(newTask);
+            input.value = '';
+            renderFlightTasks();
+        }
+
+        function checkTasksStatus() {
+            if (trip.tasks.length > 0 && trip.tasks.every(t => t.completed)) {
+                document.getElementById('tasks-done-modal').classList.remove('hidden');
+            }
         }
 
         function toggleTaskEditMenu(id) {
             const menu = document.getElementById(`edit-menu-${id}`);
+            const chevron = document.getElementById(`chevron-${id}`);
             if (menu) {
-                menu.classList.toggle('open');
+                const isOpen = menu.classList.toggle('open');
+                if (chevron) {
+                    chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
             }
         }
 
@@ -1420,7 +1558,9 @@
 
 
         // --- INIT & CORE LOGIC ---
-        window.onload = () => { loadSelects(); };
+        window.onload = () => { 
+            loadSelects(); 
+        };
 
         let tomSelectOrigin, tomSelectDest;
 
