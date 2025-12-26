@@ -33,6 +33,9 @@
     <!-- SortableJS for Drag and Drop -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
+    <!-- Confetti.js -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -441,8 +444,9 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
 
-    <!-- AUDIO ELEMENT (Invisible) -->
+    <!-- AUDIO ELEMENTS -->
     <audio id="audio-player" loop crossorigin="anonymous"></audio>
+    <audio id="sfx-success" src="https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3" preload="auto"></audio>
 
     <!-- APP CONTAINER -->
     <div id="app" class="relative w-full h-full">
@@ -1075,6 +1079,24 @@
             const task = trip.tasks.find(t => t.id === id);
             if (task) {
                 task.completed = !task.completed;
+                
+                if (task.completed) {
+                    // Trigger Confetti
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        zIndex: 200
+                    });
+
+                    // Play Success SFX
+                    const sfx = document.getElementById('sfx-success');
+                    if (sfx) {
+                        sfx.currentTime = 0;
+                        sfx.play().catch(e => console.log("Audio play blocked"));
+                    }
+                }
+
                 renderFlightTasks();
             }
         }
