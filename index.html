@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flyper - Study Timer</title>
     
     <!-- Tailwind CSS with Dark Mode Config -->
@@ -318,27 +318,52 @@
         .playing .wave-bar:nth-child(2) { animation-delay: 0.2s; }
         .playing .wave-bar:nth-child(3) { animation-delay: 0.4s; }
 
-        .music-menu {
+        /* Standardized Flight Modals (Music, Tasks, Active Task) */
+        .music-menu, .task-overlay-list {
             position: absolute;
-            top: 70px; /* Debajo del botón */
-            right: 0;
-            width: 280px; 
-            max-height: 450px;
-            overflow-y: auto; 
-            border-radius: 12px;
-            padding: 16px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transform: scale(0.95);
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            width: 320px;
+            max-height: 60vh; /* Increased slightly */
+            overflow-y: auto !important; /* Restore scrolling */
+            border-radius: 20px;
+            padding: 16px;
+            z-index: 1000; /* High z-index like active task */
             opacity: 0;
             pointer-events: none;
-            transition: all 0.2s ease;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 0;
         }
-        .music-menu.open {
-            transform: scale(1);
+
+        .music-menu.open, .task-overlay-list.open {
+            transform: translateX(-50%) translateY(0);
             opacity: 1;
             pointer-events: auto;
         }
-        
+
+        /* Active Task Menu specific (positioned at top) */
+        .active-task-menu {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            width: 320px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 0;
+            border-radius: 20px;
+            padding: 16px;
+        }
+
+        .active-task-menu.open {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .track-item {
             display: flex;
             align-items: center;
@@ -416,27 +441,9 @@
             background: #334155;
         }
         
-        /* Task Panel en vuelo */
+        /* Task Panel en vuelo (handled by standardized class) */
         .task-overlay-list {
-            position: absolute;
-            top: 100%; /* Aparece debajo del botón */
-            left: 0;
-            width: 320px;
-            max-height: 50vh;
-            overflow-y: auto;
-            border-radius: 16px;
-            padding: 16px;
-            z-index: 101;
-            transform: translateX(-20px);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-top: 12px;
-        }
-        .task-overlay-list.open {
-            transform: translateX(0);
-            opacity: 1;
-            pointer-events: auto;
+            /* Styles inherited from .active-task-menu / .music-menu combo above */
         }
         
         .active-task-pulse {
@@ -464,11 +471,40 @@
             opacity: 1;
         }
         .flight-task-item.sortable-ghost {
-            opacity: 0.4;
-            background: #e2e8f0;
-        }
-        html.dark .flight-task-item.sortable-ghost {
             background: #334155;
+        }
+
+        /* Button Glow Animation */
+        @keyframes blue-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 119, 182, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 119, 182, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 119, 182, 0); }
+        }
+        .button-glow {
+            animation: blue-pulse 2s infinite;
+            border-color: #0077b6 !important;
+            color: #0077b6 !important;
+        }
+        html.dark .button-glow {
+            border-color: #38bdf8 !important;
+            color: #38bdf8 !important;
+        }
+
+        /* Right Button Stack Layout */
+        .right-button-stack {
+            position: absolute;
+            top: 55%;
+            right: 16px;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+            pointer-events: none;
+        }
+        .right-button-stack > * {
+            pointer-events: auto;
         }
 
         /* FLYPER Logo Styles */
@@ -551,6 +587,19 @@
                 width: 400px;
                 height: 400px;
             }
+            .flyper-logo-map {
+                width: 45px;
+            }
+            .task-overlay-list, .active-task-menu {
+                width: calc(100vw - 32px) !important;
+                max-width: 320px;
+            }
+            .hud-panel {
+                padding: 12px !important;
+            }
+            #hud-timer {
+                font-size: 1.5rem !important;
+            }
         }
 
         @media (max-width: 576px) {
@@ -561,39 +610,56 @@
                 width: 300px;
                 height: 300px;
             }
-        }
-
-        /* FLYPER Logo - Map Screen (Bottom-Left) */
-        .flyper-logo-map {
-            width: 50px;
-            height: auto;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .flyper-logo-map img {
-            width: 100%;
-            height: auto;
-            filter: brightness(0) opacity(0.4) drop-shadow(0px 1px 3px rgba(0,0,0,0.3));
-            transition: filter 0.3s ease;
-        }
-
-        /* Dark mode - ligero brillo azul para mejor visibilidad */
-        html.dark .flyper-logo-map img {
-            filter: brightness(0) opacity(0.4) drop-shadow(0px 0px 6px rgba(56,189,248,0.15));
-        }
-
-        /* Responsive sizing */
-        @media (max-width: 768px) {
-            .flyper-logo-map {
-                width: 45px;
-            }
-        }
-
-        @media (max-width: 576px) {
             .flyper-logo-map {
                 width: 40px;
             }
+            .boucher-peek {
+                width: 90%;
+                bottom: -170px;
+            }
+            .boucher-peek:hover {
+                bottom: -5px;
+            }
+            .music-menu {
+                width: calc(100vw - 32px);
+                right: 0;
+            }
+            .glass-panel {
+                padding: 1.5rem !important;
+            }
+            #screen-todo .glass-panel {
+                height: 90vh;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .max-w-2xl.mx-auto.grid.grid-cols-3 {
+                grid-template-cols: 1fr 40px 1fr !important;
+                gap: 2px !important;
+            }
+            .hud-panel {
+                padding: 8px !important;
+            }
+            .hud-panel div.text-lg {
+                font-size: 1rem !important;
+            }
+            .boucher-peek {
+                width: 95%;
+            }
+        }
+
+        /* Prevent text selection for better app feel on mobile */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        input, select, textarea {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
         }
 
         /* Boucher Peek Effect Styles */
@@ -636,6 +702,11 @@
         }
         html.dark .boucher-handle-line {
             background: rgba(255, 255, 255, 0.2);
+        }
+
+        #btn-active-task-toggle {
+            pointer-events: auto !important;
+            z-index: 1000 !important;
         }
 
     </style>
@@ -839,68 +910,122 @@
         <div id="screen-flight" class="hidden-screen h-full w-full relative overflow-hidden">
             <div id="map"></div>
 
-            <!-- BOTONES SUPERIORES DERECHA -->
-            <div class="absolute top-4 right-4 z-[100] flex flex-col items-end gap-3 pointer-events-auto">
+            <!-- STACK DE BOTONES (DERECHA) -->
+            <div class="right-button-stack">
                 
-                <a href="https://github.com/vicevll/flyper" target="_blank" class="theme-toggle flex items-center justify-center" title="Ver en GitHub">
-                    <i class="fa-brands fa-github text-xl"></i>
-                </a>
+                <!-- BOTÓN MÚSICA -->
+                <div class="relative">
+                    <button id="btn-music-toggle" onclick="toggleMusicMenu()" class="music-btn" title="Música de Fondo">
+                        <i class="fa-solid fa-music text-lg" id="music-icon"></i>
+                        <div class="h-4 flex items-end ml-1 gap-[2px]" id="music-waves" style="display:none;">
+                            <div class="wave-bar h-3"></div>
+                            <div class="wave-bar h-4"></div>
+                            <div class="wave-bar h-2"></div>
+                        </div>
+                    </button>
+                </div>
 
-                <button onclick="toggleTheme()" class="theme-toggle" title="Cambiar Tema">
+                <!-- BOTÓN LISTA TAREAS -->
+                <div class="relative">
+                    <button onclick="toggleTaskList()" class="music-btn shadow-lg" title="Plan de Vuelo">
+                        <i class="fa-solid fa-list-check"></i>
+                    </button>
+                </div>
+
+                <!-- BOTÓN TAREA ACTUAL -->
+                <button id="btn-active-task-toggle" onclick="toggleActiveTaskMenu()" class="music-btn shadow-lg" title="Tarea Actual">
+                    <i class="fa-solid fa-person-digging"></i>
+                </button>
+
+                <!-- BOTÓN ABORTAR VUELO -->
+                <button onclick="cancelFlight()" class="cancel-btn shadow-lg" title="Abortar Vuelo">
+                    <i class="fa-solid fa-plane-slash"></i>
+                </button>
+
+                <!-- BOTÓN CAMBIAR TEMA -->
+                <button onclick="toggleTheme()" class="theme-toggle shadow-lg" title="Cambiar Tema">
                     <i class="fa-solid fa-moon dark:hidden"></i>
                     <i class="fa-solid fa-sun hidden dark:inline text-yellow-400"></i>
                 </button>
+            </div>
 
-                <button id="btn-music-toggle" onclick="toggleMusicMenu()" class="music-btn relative" title="Música de Fondo">
-                    <i class="fa-solid fa-music text-lg" id="music-icon"></i>
-                    <div class="h-4 flex items-end ml-1 gap-[2px]" id="music-waves" style="display:none;">
-                        <div class="wave-bar h-3"></div>
-                        <div class="wave-bar h-4"></div>
-                        <div class="wave-bar h-2"></div>
+            <!-- TAREA ACTUAL (POSICIÓN SUPERIOR) -->
+            <div id="active-task-hud" class="active-task-menu glass-panel shadow-2xl">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="text-xs font-bold text-[#0077b6] dark:text-[#38bdf8] uppercase tracking-wider">
+                        <i class="fa-solid fa-play mr-1"></i> Tarea Actual
                     </div>
-                </button>
+                    <button onclick="toggleActiveTaskMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="text-2xl font-mono font-black text-gray-700 dark:text-gray-200 mb-1" id="active-task-time">--:--</div>
+                <div class="font-bold text-lg text-gray-800 dark:text-white mb-3" id="active-task-title">Nombre de la Tarea</div>
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 bg-gray-200 dark:bg-gray-700 h-3 rounded-full overflow-hidden">
+                        <div id="active-task-bar" class="bg-[#0077b6] dark:bg-[#38bdf8] h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <div id="active-task-pct" class="text-sm font-black text-[#0077b6] dark:text-[#38bdf8] min-w-[40px] text-right">0%</div>
+                </div>
+            </div>
 
-                <!-- Menú Música -->
-                <div id="music-menu" class="music-menu mt-2">
-                    <div class="text-xs font-bold text-gray-400 uppercase mb-2 px-2">Ambiente de Estudio</div>
-                    <!-- (Items de música existentes) -->
-                    <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3', this)">
-                        <i class="fa-solid fa-headphones"></i> Lofi Chill Beats
+            <!-- MUSIC MENU (REUBICADO) -->
+            <div id="music-menu" class="music-menu task-panel glass-panel">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white">Música</h3>
+                    <button onclick="toggleMusicMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3', this)">
+                    <i class="fa-solid fa-headphones"></i> Lofi Chill Beats
+                </div>
+                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3', this)">
+                    <i class="fa-solid fa-brain"></i> Deep Focus
+                </div>
+                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3', this)">
+                    <i class="fa-solid fa-music"></i> Piano Focus
+                </div>
+                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/07/04/audio_18170b2e2a.mp3', this)">
+                    <i class="fa-solid fa-cloud-rain"></i> Lluvia Suave
+                </div>
+                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2021/09/06/audio_360340b080.mp3', this)">
+                    <i class="fa-solid fa-moon"></i> Noche Estrellada
+                </div>
+                <div class="mt-4 mb-2 px-2">
+                    <div class="flex justify-between text-[10px] text-gray-400 uppercase font-bold mb-1">
+                        <span>Volumen</span>
+                        <span id="vol-label">50%</span>
                     </div>
-                    <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3', this)">
-                        <i class="fa-solid fa-brain"></i> Deep Focus
-                    </div>
-                    <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3', this)">
-                        <i class="fa-solid fa-music"></i> Piano Focus
-                    </div>
-                    <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/07/04/audio_18170b2e2a.mp3', this)">
-                        <i class="fa-solid fa-cloud-rain"></i> Lluvia Suave
-                    </div>
-                    <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2021/09/06/audio_360340b080.mp3', this)">
-                        <i class="fa-solid fa-moon"></i> Noche Estrellada
-                    </div>
-                    
-                    <div class="mt-4 mb-2 px-2">
-                        <div class="flex justify-between text-[10px] text-gray-400 uppercase font-bold mb-1">
-                            <span>Volumen</span>
-                            <span id="vol-label">50%</span>
-                        </div>
-                        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)">
-                    </div>
-
-                    <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
-                        <div class="track-item text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" onclick="stopMusic()">
-                            <i class="fa-solid fa-stop"></i> Detener Música
-                        </div>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)">
+                </div>
+                <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                    <div class="track-item text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" onclick="stopMusic()">
+                        <i class="fa-solid fa-stop"></i> Detener Música
                     </div>
                 </div>
             </div>
 
-            <!-- BOTONES INFERIOR DERECHA (CANCELAR) -->
-            <div class="absolute bottom-4 right-4 z-[100] pointer-events-auto">
-                <button onclick="cancelFlight()" class="cancel-btn" title="Abortar Vuelo">
-                    <i class="fa-solid fa-plane-slash"></i>
-                </button>
+            <!-- FLIGHT TASK LIST (REUBICADO) -->
+            <div id="flight-task-list" class="task-overlay-list task-panel glass-panel shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Plan de Vuelo</h3>
+                    <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
+                    <div class="flex flex-col gap-2">
+                        <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
+                            class="w-full bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white">
+                        <div class="flex gap-2 items-center">
+                            <div class="flex-1 flex items-center gap-2 bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase">Tiempo:</span>
+                                <input type="number" id="flight-task-percent" value="10" min="1" max="100" 
+                                    class="w-full bg-transparent outline-none text-xs dark:text-white">
+                                <span class="text-xs text-gray-400">%</span>
+                            </div>
+                            <button onclick="addTaskInFlight()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                <i class="fa-solid fa-plus mr-1"></i> Añadir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="flight-tasks-container" class="space-y-2"></div>
             </div>
 
             <!-- HUD SUPERIOR (TIEMPO) -->
@@ -913,64 +1038,6 @@
                     <div class="text-right">
                         <div class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">Progreso</div>
                         <div class="text-xl font-bold text-[#0077b6] dark:text-[#38bdf8]" id="hud-pct">0%</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- HUD TAREA ACTIVA Y BOTÓN TAREAS (SUPERIOR IZQUIERDA) -->
-            <div id="active-task-hud" class="absolute top-4 left-4 z-[100] pointer-events-none transition-opacity duration-300 opacity-0 flex flex-col gap-3 items-start">
-                <div class="w-[320px] hud-panel p-4 pointer-events-auto border-l-4 border-l-[#0077b6] dark:border-l-[#38bdf8] flex flex-col gap-2 active-task-pulse bg-white/95 dark:bg-gray-900/95 shadow-lg">
-                    <div class="flex justify-between items-center">
-                        <div class="text-xs font-bold text-[#0077b6] dark:text-[#38bdf8] uppercase tracking-wider">
-                            <i class="fa-solid fa-play mr-1"></i> Tarea Actual
-                        </div>
-                        <div class="text-lg font-mono font-bold text-gray-600 dark:text-gray-300" id="active-task-time">--:--</div>
-                    </div>
-                    <div class="font-bold text-xl text-gray-800 dark:text-white truncate" id="active-task-title">
-                        Nombre de la Tarea
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1 bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
-                            <div id="active-task-bar" class="bg-[#0077b6] dark:bg-[#38bdf8] h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
-                        </div>
-                        <div id="active-task-pct" class="text-xs font-bold text-[#0077b6] dark:text-[#38bdf8] min-w-[35px] text-right">0%</div>
-                    </div>
-                </div>
-                
-                <div class="relative pointer-events-auto">
-                    <button onclick="toggleTaskList()" class="music-btn shadow-lg" title="Ver Tareas">
-                        <i class="fa-solid fa-list-check"></i>
-                    </button>
-
-                    <!-- PANEL DE TAREAS (AHORA CON ESTILO DE MENÚ DESPLEGABLE) -->
-                    <div id="flight-task-list" class="task-overlay-list task-panel shadow-2xl">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-gray-800 dark:text-white text-base">Plan de Vuelo</h3>
-                            <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                        
-                        <!-- AGREGAR TAREA EN VUELO -->
-                        <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
-                            <div class="flex flex-col gap-2">
-                                <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
-                                    class="w-full bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white">
-                                <div class="flex gap-2 items-center">
-                                    <div class="flex-1 flex items-center gap-2 bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5">
-                                        <span class="text-[10px] text-gray-400 font-bold uppercase">Tiempo:</span>
-                                        <input type="number" id="flight-task-percent" value="10" min="1" max="100" 
-                                            class="w-full bg-transparent outline-none text-xs dark:text-white">
-                                        <span class="text-xs text-gray-400">%</span>
-                                    </div>
-                                    <button onclick="addTaskInFlight()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
-                                        <i class="fa-solid fa-plus mr-1"></i> Añadir
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="flight-tasks-container" class="space-y-2">
-                            <!-- Lista inyectada dinámicamente -->
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1431,8 +1498,32 @@
 
         // --- FLIGHT TASK PANEL LOGIC ---
         function toggleTaskList() {
-            document.getElementById('flight-task-list').classList.toggle('open');
+            const menu = document.getElementById('flight-task-list');
+            const musicMenu = document.getElementById('music-menu');
+            const activeHUD = document.getElementById('active-task-hud');
+            
+            // Close other menus
+            if (musicMenu) musicMenu.classList.remove('open');
+            if (activeHUD) activeHUD.classList.remove('open');
+
+            if (menu) menu.classList.toggle('open');
             renderFlightTasks();
+        }
+
+        function toggleActiveTaskMenu() {
+            const menu = document.getElementById('active-task-hud');
+            const taskList = document.getElementById('flight-task-list');
+            const musicMenu = document.getElementById('music-menu');
+            const btn = document.getElementById('btn-active-task-toggle');
+
+            // Remove glow if present
+            if(btn) btn.classList.remove('button-glow');
+
+            // Close other menus
+            if (taskList) taskList.classList.remove('open');
+            if (musicMenu) musicMenu.classList.remove('open');
+
+            if (menu) menu.classList.toggle('open');
         }
 
         function renderFlightTasks() {
@@ -1702,6 +1793,10 @@
             document.getElementById('boucher-dest').innerText = trip.dest.code;
             document.getElementById('boucher-duration').innerText = formatTime(Math.round(trip.durationMs / 60000));
 
+            // Highlight Active Task Button
+            const btn = document.getElementById('btn-active-task-toggle');
+            if(btn) btn.classList.add('button-glow');
+
             showScreen('screen-flight');
             initMap();
         }
@@ -1769,7 +1864,17 @@
         }
 
         // --- MUSIC LOGIC ---
-        function toggleMusicMenu() { document.getElementById('music-menu').classList.toggle('open'); }
+        function toggleMusicMenu() { 
+            const menu = document.getElementById('music-menu');
+            const taskList = document.getElementById('flight-task-list');
+            const activeHUD = document.getElementById('active-task-hud');
+
+            // Close other menus
+            if (taskList) taskList.classList.remove('open');
+            if (activeHUD) activeHUD.classList.remove('open');
+
+            if (menu) menu.classList.toggle('open'); 
+        }
 
         function playTrack(url, element) {
             const player = document.getElementById('audio-player');
@@ -1823,7 +1928,11 @@
                     attributionControl: false,
                     minZoom: 2,
                     maxBounds: [[-90, -180], [90, 180]],
-                    maxBoundsViscosity: 1.0
+                    maxBoundsViscosity: 1.0,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                    touchZoom: true,
+                    dragging: true
                 });
                 updateMapTiles();
 
@@ -1887,18 +1996,23 @@
 
         function updateActiveTaskHUD(globalProgress) {
             const hud = document.getElementById('active-task-hud');
+            const btn = document.getElementById('btn-active-task-toggle');
             
             if (trip.tasks.length === 0 || globalProgress >= 1) {
-                hud.style.opacity = '0';
+                if (btn) btn.style.display = 'none';
+                hud.classList.remove('open');
                 return;
+            } else {
+                if (btn) btn.style.display = 'flex';
             }
 
             // MODIFIED: Select the first incomplete task
             let currentTask = trip.tasks.find(t => !t.completed);
             
-            // If all tasks are completed, hide the HUD
+            // If all tasks are completed, hide the button
             if (!currentTask) {
-                hud.style.opacity = '0';
+                if (btn) btn.style.display = 'none';
+                hud.classList.remove('open');
                 return;
             }
 
@@ -1920,7 +2034,6 @@
                 accumulated += normalizedShare;
             }
 
-            hud.style.opacity = '1';
             document.getElementById('active-task-title').innerText = currentTask.title;
             
             // Calculate local progress
