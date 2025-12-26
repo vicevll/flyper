@@ -649,20 +649,23 @@
     <!-- APP CONTAINER -->
     <div id="app" class="relative w-full h-full">
 
-        <!-- GLOBAL THEME TOGGLE -->
-        <div class="absolute top-4 right-4 z-50">
-            <button onclick="toggleTheme()" class="theme-toggle" title="Cambiar Tema">
-                <i class="fa-solid fa-moon dark:hidden"></i>
-                <i class="fa-solid fa-sun hidden dark:inline text-yellow-400"></i>
-            </button>
-        </div>
-
         <!-- PANTALLA 1: PLANIFICADOR (VUELO) -->
         <div id="screen-planner" class="active-screen flex flex-col items-center justify-center p-4 h-full bg-gray-100 dark:bg-gray-950 transition-colors duration-300 overflow-hidden">
             
             <!-- DECORACIÓN DE FONDO -->
             <div class="decorative-bg-container">
                 <div class="decorative-circle"></div>
+            </div>
+
+            <!-- BOTONES SUPERIORES (DENTRO DEL PLANIFICADOR) -->
+            <div class="absolute top-4 right-4 z-50 flex gap-3">
+                <a href="https://github.com/vicevll/flyper" target="_blank" class="theme-toggle flex items-center justify-center" title="Ver en GitHub">
+                    <i class="fa-brands fa-github text-xl"></i>
+                </a>
+                <button onclick="toggleTheme()" class="theme-toggle" title="Cambiar Tema">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline text-yellow-400"></i>
+                </button>
             </div>
 
             <!-- Logo FLYPER -->
@@ -839,6 +842,10 @@
             <!-- BOTONES SUPERIORES DERECHA -->
             <div class="absolute top-4 right-4 z-[100] flex flex-col items-end gap-3 pointer-events-auto">
                 
+                <a href="https://github.com/vicevll/flyper" target="_blank" class="theme-toggle flex items-center justify-center" title="Ver en GitHub">
+                    <i class="fa-brands fa-github text-xl"></i>
+                </a>
+
                 <button onclick="toggleTheme()" class="theme-toggle" title="Cambiar Tema">
                     <i class="fa-solid fa-moon dark:hidden"></i>
                     <i class="fa-solid fa-sun hidden dark:inline text-yellow-400"></i>
