@@ -1345,55 +1345,62 @@
                 return;
             }
 
-            // Determine which task corresponds to the current global progress
-            // Convert % assignments to progress intervals
+            // MODIFIED: Select the first incomplete task
+            let currentTask = trip.tasks.find(t => !t.completed);
+            
+            // If all tasks are completed, hide the HUD
+            if (!currentTask) {
+                hud.style.opacity = '0';
+                return;
+            }
+
+            // Find the schedule time window for this specific task
+            // to display the progress bar correctly relative to its allocated time
             let accumulated = 0;
-            let currentTask = null;
             let taskStart = 0;
             let taskEnd = 0;
 
-            const totalPercent = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
-            // Normalize to 1.0 (100%) even if user didn't sum to 100
-            // Example: User put 50% Task A, 50% Task B -> 0-0.5 is A, 0.5-1.0 is B
-            // If user put 20% total, remaining 80% is "Free Flight"
-
             for (let i = 0; i < trip.tasks.length; i++) {
                 const t = trip.tasks[i];
-                const normalizedShare = t.percent / 100; // Share of total flight
+                const normalizedShare = t.percent / 100;
                 
-                taskStart = accumulated;
-                taskEnd = accumulated + normalizedShare;
-
-                if (globalProgress >= taskStart && globalProgress < taskEnd) {
-                    currentTask = t;
+                if (t === currentTask) {
+                    taskStart = accumulated;
+                    taskEnd = accumulated + normalizedShare;
                     break;
                 }
                 accumulated += normalizedShare;
             }
 
-            if (currentTask) {
-                hud.style.opacity = '1';
-                document.getElementById('active-task-title').innerText = currentTask.title;
-                
-                // Calculate local progress for this specific task
-                const taskDuration = taskEnd - taskStart;
-                const localProgress = (globalProgress - taskStart) / taskDuration;
-                
-                document.getElementById('active-task-bar').style.width = (localProgress * 100) + '%';
-                
-                // Calc remaining time for this task
-                const taskTotalMs = trip.durationMs * taskDuration;
-                const taskElapsedMs = taskTotalMs * localProgress;
-                const taskRemainingMs = taskTotalMs - taskElapsedMs;
-                const mins = Math.ceil(taskRemainingMs / 60000);
-                document.getElementById('active-task-time').innerText = mins + "m rest";
-            } else {
-                // Free Flight zone (if tasks don't cover 100%)
-                hud.style.opacity = '1';
-                document.getElementById('active-task-title').innerText = "Vuelo Libre";
-                document.getElementById('active-task-time').innerText = "--";
-                document.getElementById('active-task-bar').style.width = '0%';
+            hud.style.opacity = '1';
+            document.getElementById('active-task-title').innerText = currentTask.title;
+            
+            // Calculate local progress
+            const taskDuration = taskEnd - taskStart;
+            
+            // Handle edge case of 0% duration (though unlikely)
+            if (taskDuration <= 0) {
+                 document.getElementById('active-task-bar').style.width = '100%';
+                 document.getElementById('active-task-time').innerText = "0m rest";
+                 return;
             }
+
+            let localProgress = (globalProgress - taskStart) / taskDuration;
+            
+            // Clamp progress:
+            // If we are ahead of schedule (early), bar is empty.
+            // If we are behind schedule (late), bar is full.
+            if (localProgress < 0) localProgress = 0;
+            if (localProgress > 1) localProgress = 1;
+
+            document.getElementById('active-task-bar').style.width = (localProgress * 100) + '%';
+            
+            // Time remaining
+            const taskTotalMs = trip.durationMs * taskDuration;
+            const taskElapsedMs = taskTotalMs * localProgress;
+            const taskRemainingMs = taskTotalMs - taskElapsedMs;
+            const mins = Math.ceil(taskRemainingMs / 60000);
+            document.getElementById('active-task-time').innerText = mins + "m rest";
         }
 
         function finishFlight() {
