@@ -364,6 +364,36 @@
             pointer-events: auto;
         }
 
+        /* Desktop specific positioning (>= 1024px) */
+        @media (min-width: 1024px) {
+            .active-task-menu {
+                left: 24px !important;
+                top: 100px !important;
+                transform: translateY(-20px) !important;
+                width: 380px !important; /* Enlarged */
+                max-height: 35vh;
+            }
+            .task-overlay-list {
+                left: 24px !important;
+                top: 310px !important; /* Brought closer to Active Task (was 400px) */
+                transform: translateY(-20px) !important;
+                width: 380px !important; /* Enlarged */
+                max-height: 55vh;
+            }
+            .active-task-menu.open, .task-overlay-list.open, .music-menu.open {
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+            /* Music menu top-right positioning */
+            .music-menu {
+                top: 100px !important;
+                right: 80px !important; /* Moved further left to clear buttons (was 24px) */
+                left: auto !important;
+                transform: translateY(-20px) !important;
+            }
+        }
+
         .track-item {
             display: flex;
             align-items: center;
@@ -474,20 +504,21 @@
             background: #334155;
         }
 
-        /* Button Glow Animation */
-        @keyframes blue-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 119, 182, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(0, 119, 182, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 119, 182, 0); }
-        }
         .button-glow {
-            animation: blue-pulse 2s infinite;
-            border-color: #0077b6 !important;
-            color: #0077b6 !important;
+            background: #5e60ce !important;
+            background-color: #5e60ce !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(94, 96, 206, 0.4) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            opacity: 1 !important;
         }
         html.dark .button-glow {
-            border-color: #38bdf8 !important;
-            color: #38bdf8 !important;
+            background-color: #5e60ce !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 20px rgba(94, 96, 206, 0.6) !important;
         }
 
         /* Right Button Stack Layout */
@@ -1501,10 +1532,13 @@
             const menu = document.getElementById('flight-task-list');
             const musicMenu = document.getElementById('music-menu');
             const activeHUD = document.getElementById('active-task-hud');
+            const isDesktop = window.innerWidth >= 1024;
             
-            // Close other menus
-            if (musicMenu) musicMenu.classList.remove('open');
-            if (activeHUD) activeHUD.classList.remove('open');
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (musicMenu) musicMenu.classList.remove('open');
+                if (activeHUD) activeHUD.classList.remove('open');
+            }
 
             if (menu) menu.classList.toggle('open');
             renderFlightTasks();
@@ -1515,13 +1549,13 @@
             const taskList = document.getElementById('flight-task-list');
             const musicMenu = document.getElementById('music-menu');
             const btn = document.getElementById('btn-active-task-toggle');
+            const isDesktop = window.innerWidth >= 1024;
 
-            // Remove glow if present
-            if(btn) btn.classList.remove('button-glow');
-
-            // Close other menus
-            if (taskList) taskList.classList.remove('open');
-            if (musicMenu) musicMenu.classList.remove('open');
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (taskList) taskList.classList.remove('open');
+                if (musicMenu) musicMenu.classList.remove('open');
+            }
 
             if (menu) menu.classList.toggle('open');
         }
@@ -1793,9 +1827,21 @@
             document.getElementById('boucher-dest').innerText = trip.dest.code;
             document.getElementById('boucher-duration').innerText = formatTime(Math.round(trip.durationMs / 60000));
 
-            // Highlight Active Task Button
+            // Logic to handle desktop/mobile differences
+            const isDesktop = window.innerWidth >= 1024;
             const btn = document.getElementById('btn-active-task-toggle');
-            if(btn) btn.classList.add('button-glow');
+            const hud = document.getElementById('active-task-hud');
+
+            if (isDesktop) {
+                // On desktop, show both HUDs by default
+                if (hud) hud.classList.add('open');
+                const taskList = document.getElementById('flight-task-list');
+                if (taskList) taskList.classList.add('open');
+                if (btn) btn.classList.add('button-glow');
+            } else {
+                // On mobile, keep HUD closed and glow the button
+                if (btn) btn.classList.add('button-glow');
+            }
 
             showScreen('screen-flight');
             initMap();
@@ -1868,10 +1914,13 @@
             const menu = document.getElementById('music-menu');
             const taskList = document.getElementById('flight-task-list');
             const activeHUD = document.getElementById('active-task-hud');
+            const isDesktop = window.innerWidth >= 1024;
 
-            // Close other menus
-            if (taskList) taskList.classList.remove('open');
-            if (activeHUD) activeHUD.classList.remove('open');
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (taskList) taskList.classList.remove('open');
+                if (activeHUD) activeHUD.classList.remove('open');
+            }
 
             if (menu) menu.classList.toggle('open'); 
         }
@@ -2042,7 +2091,7 @@
             // Handle edge case of 0% duration (though unlikely)
             if (taskDuration <= 0) {
                  document.getElementById('active-task-bar').style.width = '100%';
-                 document.getElementById('active-task-time').innerText = "0m rest";
+                 document.getElementById('active-task-time').innerText = "0m restantes";
                  return;
             }
 
@@ -2063,7 +2112,7 @@
             const taskElapsedMs = taskTotalMs * localProgress;
             const taskRemainingMs = taskTotalMs - taskElapsedMs;
             const mins = Math.ceil(taskRemainingMs / 60000);
-            document.getElementById('active-task-time').innerText = mins + "m rest";
+            document.getElementById('active-task-time').innerText = mins + "m restantes";
         }
 
         function finishFlight() {
