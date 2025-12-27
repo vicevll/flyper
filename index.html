@@ -1092,24 +1092,34 @@
             <!-- MUSIC MENU (REUBICADO) -->
             <div id="music-menu" class="music-menu task-panel glass-panel">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-gray-800 dark:text-white">Música</h3>
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Atmósfera de Estudio (Radio)</h3>
                     <button onclick="toggleMusicMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3', this)">
-                    <i class="fa-solid fa-headphones"></i> Lofi Chill Beats
+                
+                <div class="space-y-1">
+                    <div class="track-item" onclick="playTrack('https://stream.zeno.fm/0r0xa792kwzuv', this)">
+                        <i class="fa-solid fa-radio text-indigo-500"></i> 
+                        <div class="flex flex-col leading-tight">
+                            <span>Lofi Hip Hop Radio</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Beats para estudiar/relajarse</span>
+                        </div>
+                    </div>
+                    <div class="track-item" onclick="playTrack('https://pianosolo.streamguys1.com/live', this)">
+                        <i class="fa-solid fa-wind text-sky-500"></i> 
+                        <div class="flex flex-col leading-tight">
+                            <span>Piano & Ambient</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Melodías suaves en vivo</span>
+                        </div>
+                    </div>
+                    <div class="track-item" onclick="playTrack('src/sounds/Musica_lluvia.mp3', this)">
+                        <i class="fa-solid fa-cloud-rain text-teal-500"></i> 
+                        <div class="flex flex-col leading-tight">
+                            <span>Lluvia Suave (Local)</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Ambiente tranquilo (Offline)</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3', this)">
-                    <i class="fa-solid fa-brain"></i> Deep Focus
-                </div>
-                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3', this)">
-                    <i class="fa-solid fa-music"></i> Piano Focus
-                </div>
-                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2022/07/04/audio_18170b2e2a.mp3', this)">
-                    <i class="fa-solid fa-cloud-rain"></i> Lluvia Suave
-                </div>
-                <div class="track-item" onclick="playTrack('https://cdn.pixabay.com/audio/2021/09/06/audio_360340b080.mp3', this)">
-                    <i class="fa-solid fa-moon"></i> Noche Estrellada
-                </div>
+
                 <div class="mt-4 mb-2 px-2">
                     <div class="flex justify-between text-[10px] text-gray-400 uppercase font-bold mb-1">
                         <span>Volumen</span>
@@ -1117,9 +1127,10 @@
                     </div>
                     <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)">
                 </div>
+                
                 <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
                     <div class="track-item text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" onclick="stopMusic()">
-                        <i class="fa-solid fa-stop"></i> Detener Música
+                        <i class="fa-solid fa-stop"></i> Detener Radio
                     </div>
                 </div>
             </div>
