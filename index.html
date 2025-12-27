@@ -629,7 +629,29 @@
                 padding: 12px !important;
             }
             #hud-timer {
-                font-size: 1.5rem !important;
+                font-size: 1.25rem !important; /* Más pequeño en móvil */
+            }
+            /* Unificar HUD en móvil */
+            .max-w-3xl.mx-auto.flex.flex-wrap {
+                flex-wrap: nowrap !important;
+                gap: 4px !important;
+                justify-content: space-between !important;
+                width: 95% !important;
+            }
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel {
+                min-width: 0 !important;
+                padding: 6px 8px !important;
+                flex: 1 !important;
+            }
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel .text-\[10px\] {
+                font-size: 8px !important;
+            }
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel .text-xl,
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel .text-2xl {
+                font-size: 14px !important;
+            }
+            #hud-timer {
+                font-size: 14px !important;
             }
         }
 
@@ -740,13 +762,55 @@
             z-index: 1000 !important;
         }
 
+        /* Estado de Tiempo Agotado */
+        .task-overtime {
+            background: #c1121f !important;
+            border-color: #780001 !important;
+            color: white !important;
+        }
+        .task-overtime div, .task-overtime span {
+            color: white !important;
+        }
+        .task-overtime .bg-gray-200 {
+            background: rgba(255,255,255,0.2) !important;
+        }
+        .task-overtime #active-task-bar {
+            background: white !important;
+        }
+
+        /* Animación para el botón siguiente */
+        .btn-next-task {
+            background: white;
+            color: #c1121f;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 12px;
+            margin-top: 12px;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        .task-overtime .btn-next-task {
+            display: block;
+            animation: pulse-white 2s infinite;
+        }
+        @keyframes pulse-white {
+            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
 
     <!-- AUDIO ELEMENTS -->
     <audio id="audio-player" loop crossorigin="anonymous"></audio>
-    <audio id="sfx-success" src="src/sounds/Sonido%20de%20moneda%20Mario.mp3" preload="auto"></audio>
+    <audio id="sfx-success" src="src/sounds/copano.mp3" preload="auto"></audio>
+    <audio id="sfx-overtime" src="src/sounds/ringring.mp3" preload="auto"></audio>
 
     <!-- APP CONTAINER -->
     <div id="app" class="relative w-full h-full">
@@ -843,6 +907,16 @@
                     <div class="w-10"></div> <!-- Spacer -->
                 </div>
 
+                <!-- Session Name Area -->
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 mb-2 px-1">
+                        <i class="fa-solid fa-tag text-blue-500 text-xs"></i>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">Nombre de la Misión</label>
+                    </div>
+                    <input type="text" id="session-name-input" placeholder="Ej: Preparación Examen IA..." 
+                           class="w-full bg-blue-500/5 dark:bg-white/5 border-2 border-dashed border-blue-500/20 dark:border-blue-400/20 rounded-2xl px-5 py-3 text-lg font-bold text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-all text-center">
+                </div>
+
                 <!-- Input Area -->
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="task-input" placeholder="Nueva tarea / Materia..." 
@@ -888,7 +962,10 @@
             <div class="w-full max-w-lg glass-panel !bg-white/90 dark:!bg-gray-800/90 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
                 <!-- Header -->
                 <div class="pass-header flex justify-between items-center p-6 !bg-blue-600 dark:!bg-blue-500 text-white">
-                    <span class="font-bold tracking-widest uppercase text-sm opacity-90">Flyper Pass</span>
+                    <div class="flex flex-col">
+                        <span class="font-bold tracking-widest uppercase text-[10px] opacity-70">Flyper Pass</span>
+                        <span class="font-black text-lg tracking-tight" id="ticket-session-name">Misión de Estudio</span>
+                    </div>
                     <i class="fa-solid fa-earth-americas text-2xl opacity-50"></i>
                 </div>
                 
@@ -921,8 +998,11 @@
                             <div class="font-bold text-gray-700 dark:text-gray-200">Business / Focus</div>
                         </div>
                         <div class="bg-white/50 dark:bg-black/20 border border-gray-100 dark:border-white/5 p-4 rounded-2xl">
-                            <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Tareas</div>
-                            <div class="font-bold text-gray-700 dark:text-gray-200" id="ticket-task-count">0 Items</div>
+                            <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Arribo Estimado</div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-700 dark:text-gray-200" id="ticket-arrival">--:--</span>
+                                <span class="text-[10px] text-gray-500" id="ticket-arrival-date">--/--</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -996,6 +1076,9 @@
                     </div>
                     <div id="active-task-pct" class="text-sm font-black text-[#0077b6] dark:text-[#38bdf8] min-w-[40px] text-right">0%</div>
                 </div>
+                <button onclick="completeCurrentTask()" class="btn-next-task">
+                    Siguiente Tarea <i class="fa-solid fa-forward ml-1"></i>
+                </button>
             </div>
 
             <!-- MUSIC MENU (REUBICADO) -->
@@ -1034,11 +1117,14 @@
             </div>
 
             <!-- FLIGHT TASK LIST (REUBICADO) -->
-            <div id="flight-task-list" class="task-overlay-list task-panel glass-panel shadow-2xl">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Plan de Vuelo</h3>
-                    <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
-                </div>
+                    <div id="flight-task-list" class="task-overlay-list task-panel glass-panel shadow-2xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-blue-500 opacity-70">Misión</span>
+                                <h3 class="font-bold text-gray-800 dark:text-white text-base leading-tight" id="flight-list-session-name">Plan de Vuelo</h3>
+                            </div>
+                            <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
                 <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
                     <div class="flex flex-col gap-2">
                         <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
@@ -1059,16 +1145,26 @@
                 <div id="flight-tasks-container" class="space-y-2"></div>
             </div>
 
-            <!-- HUD SUPERIOR (TIEMPO) -->
+            <!-- HUD SUPERIOR (TIEMPO, FINALIZACIÓN, PROGRESO) -->
             <div class="absolute top-0 left-0 right-0 p-4 z-[90] pointer-events-none">
-                <div class="max-w-md mx-auto hud-panel p-4 flex justify-between items-center pointer-events-auto">
-                    <div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">Tiempo Restante</div>
-                        <div class="text-3xl font-mono font-bold text-gray-800 dark:text-white" id="hud-timer">00:00:00</div>
+                <div class="max-w-3xl mx-auto flex flex-wrap justify-center gap-3 pointer-events-auto">
+                    <!-- Caja 1: Tiempo Restante -->
+                    <div class="hud-panel p-3 px-5 text-center min-w-[140px]">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Tiempo Restante</div>
+                        <div class="text-2xl font-mono font-bold text-gray-800 dark:text-white" id="hud-timer">00:00:00</div>
                     </div>
-                    <div class="text-right">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">Progreso</div>
-                        <div class="text-xl font-bold text-[#0077b6] dark:text-[#38bdf8]" id="hud-pct">0%</div>
+                    
+                    <!-- Caja 2: Finalización -->
+                    <div class="hud-panel p-3 px-5 text-center min-w-[140px]">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Finalización</div>
+                        <div class="text-xl font-mono font-bold text-gray-800 dark:text-white leading-none" id="hud-arrival">--:--</div>
+                        <div class="text-[10px] text-gray-400 font-mono mt-1" id="hud-arrival-date">--/--/--</div>
+                    </div>
+                    
+                    <!-- Caja 3: Progreso -->
+                    <div class="hud-panel p-3 px-5 text-center min-w-[120px] flex flex-col justify-center">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Progreso</div>
+                        <div class="text-2xl font-bold text-[#0077b6] dark:text-[#38bdf8]" id="hud-pct">0%</div>
                     </div>
                 </div>
             </div>
@@ -1132,14 +1228,19 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-2 mt-2">
+                    <div class="grid grid-cols-3 gap-2 mt-2">
                         <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-center border border-gray-100 dark:border-gray-700">
                             <div class="text-[8px] text-gray-400 uppercase font-bold">Vuelo</div>
                             <div class="text-xs font-bold text-gray-700 dark:text-gray-200" id="boucher-duration">--:--</div>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-center border border-gray-100 dark:border-gray-700">
+                            <div class="text-[8px] text-gray-400 uppercase font-bold">Arribo</div>
+                            <div class="text-xs font-bold text-gray-700 dark:text-gray-200" id="boucher-arrival">--:--</div>
+                            <div class="text-[8px] text-gray-500" id="boucher-arrival-date">--/--</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-center border border-gray-100 dark:border-gray-700">
                             <div class="text-[8px] text-gray-400 uppercase font-bold">Asiento</div>
-                            <div class="text-xs font-bold text-gray-700 dark:text-gray-200">12A / Focus</div>
+                            <div class="text-xs font-bold text-gray-700 dark:text-gray-200">12A</div>
                         </div>
                     </div>
                 </div>
@@ -1246,6 +1347,26 @@
             </div>
         </div>
 
+        <!-- MODAL ÉXITO FINAL (NUEVO) -->
+        <div id="success-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center border border-gray-200 dark:border-gray-700">
+                <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
+                    <i class="fa-solid fa-trophy text-4xl"></i>
+                </div>
+                <h2 class="text-3xl font-black text-gray-800 dark:text-white mb-2">¡Felicidades!</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-8">Has completado todas tus misiones con éxito. ¡Vuelo impecable!</p>
+                
+                <div class="flex flex-col gap-3">
+                    <button onclick="resetApp()" class="w-full bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transform transition hover:scale-[1.02]">
+                        Siguiente Vuelo
+                    </button>
+                    <button onclick="showFinalSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg transform transition hover:scale-[1.02]">
+                        Ver Resumen
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- SCRIPTS -->
@@ -1262,6 +1383,7 @@
             distance: 0,
             durationMs: 0,
             startTime: 0,
+            sessionName: '',
             tasks: [] // Array de objetos {id, title, percent, completed}
         };
 
@@ -1640,9 +1762,42 @@
             renderFlightTasks();
         }
 
+        function showFinalSummary() {
+            document.getElementById('success-modal').classList.add('hidden');
+            executeCancellation();
+        }
+
         function checkTasksStatus() {
             if (trip.tasks.length > 0 && trip.tasks.every(t => t.completed)) {
-                document.getElementById('tasks-done-modal').classList.remove('hidden');
+                // BIG CELEBRATION
+                const duration = 5 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 400 };
+
+                const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+                const interval = setInterval(function() {
+                    const timeLeft = animationEnd - Date.now();
+
+                    if (timeLeft <= 0) {
+                        return clearInterval(interval);
+                    }
+
+                    const particleCount = 50 * (timeLeft / duration);
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+                }, 250);
+
+                // Play success sound
+                const sfx = document.getElementById('sfx-success');
+                if (sfx) {
+                    sfx.currentTime = 0;
+                    sfx.play().catch(e => console.log("Audio block"));
+                }
+
+                setTimeout(() => {
+                    document.getElementById('success-modal').classList.remove('hidden');
+                }, 1000);
             }
         }
 
@@ -1814,18 +1969,54 @@
         }
 
         function showBoardingPass() {
+            // Capture session name
+            const sessionInput = document.getElementById('session-name-input');
+            trip.sessionName = sessionInput.value.trim() || "Misión de Estudio";
+            document.getElementById('ticket-session-name').innerText = trip.sessionName;
+
             document.getElementById('ticket-origin').innerText = trip.origin.code;
             document.getElementById('ticket-dest').innerText = trip.dest.code;
             document.getElementById('ticket-duration').innerText = document.getElementById('preview-time').innerText;
-            document.getElementById('ticket-task-count').innerText = trip.tasks.length + " Items";
+            
+            // Calculate ETA
+            const etaDate = new Date(Date.now() + trip.durationMs);
+            const etaTime = etaDate.getHours().toString().padStart(2, '0') + ":" + etaDate.getMinutes().toString().padStart(2, '0');
+            const etaDateStr = etaDate.getDate().toString().padStart(2, '0') + "/" + (etaDate.getMonth() + 1).toString().padStart(2, '0');
+            
+            const ticketArrival = document.getElementById('ticket-arrival');
+            if (ticketArrival) ticketArrival.innerText = etaTime;
+            const ticketArrivalDate = document.getElementById('ticket-arrival-date');
+            if (ticketArrivalDate) ticketArrivalDate.innerText = etaDateStr;
+
             showScreen('screen-ticket');
         }
 
         function startFlight() {
+            // Update session name displays
+            const listTitle = document.getElementById('flight-list-session-name');
+            if (listTitle) listTitle.innerText = trip.sessionName;
+
             // Actualizar datos del Boucher en el mapa
             document.getElementById('boucher-origin').innerText = trip.origin.code;
             document.getElementById('boucher-dest').innerText = trip.dest.code;
             document.getElementById('boucher-duration').innerText = formatTime(Math.round(trip.durationMs / 60000));
+
+            // Set Start Time and Calculate Arrival
+            trip.startTime = Date.now();
+            const arrivalDate = new Date(trip.startTime + trip.durationMs);
+            const arrivalTime = arrivalDate.getHours().toString().padStart(2, '0') + ":" + arrivalDate.getMinutes().toString().padStart(2, '0');
+            const arrivalDateStr = arrivalDate.getDate().toString().padStart(2, '0') + "/" + (arrivalDate.getMonth() + 1).toString().padStart(2, '0');
+            const arrivalFullDate = arrivalDateStr + "/" + arrivalDate.getFullYear().toString().substr(-2);
+            
+            const boucherArrival = document.getElementById('boucher-arrival');
+            if (boucherArrival) boucherArrival.innerText = arrivalTime;
+            const boucherArrivalDate = document.getElementById('boucher-arrival-date');
+            if (boucherArrivalDate) boucherArrivalDate.innerText = arrivalDateStr;
+            
+            const hudArrival = document.getElementById('hud-arrival');
+            if (hudArrival) hudArrival.innerText = arrivalTime;
+            const hudArrivalDate = document.getElementById('hud-arrival-date');
+            if (hudArrivalDate) hudArrivalDate.innerText = arrivalFullDate;
 
             // Logic to handle desktop/mobile differences
             const isDesktop = window.innerWidth >= 1024;
@@ -1859,7 +2050,9 @@
 
         function executeCancellation() {
             // Ejecutar la lógica real de cancelación
-            closeConfirmModal();
+            document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('tasks-done-modal').classList.add('hidden');
+            
             clearInterval(timerInterval);
             stopMusic();
 
@@ -1886,6 +2079,13 @@
 
             // Show modal
             document.getElementById('summary-modal').classList.remove('hidden');
+
+            // Play success sound
+            const sfx = document.getElementById('sfx-success');
+            if (sfx) {
+                sfx.currentTime = 0;
+                sfx.play().catch(e => console.log("Audio block"));
+            }
         }
 
         function resetApp() {
@@ -1893,9 +2093,11 @@
             if (timerInterval) clearInterval(timerInterval);
             if (map) { map.remove(); map = null; tileLayer = null; labelLayer = null; }
             
-            // Close modals
+            // Close all modals
             document.getElementById('summary-modal').classList.add('hidden');
             document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('success-modal').classList.add('hidden');
+            document.getElementById('tasks-done-modal').classList.add('hidden');
 
             document.getElementById('origin').value = "";
             document.getElementById('destination').value = "";
@@ -2002,7 +2204,6 @@
                 });
                 planeMarker = L.marker(oLatLon, { icon: planeIcon }).addTo(map);
 
-                trip.startTime = Date.now();
                 renderFlightTasks(); // Prepare list
                 timerInterval = setInterval(loopFlight, 1000);
             }, 300);
@@ -2107,12 +2308,40 @@
             document.getElementById('active-task-bar').style.width = pct + '%';
             document.getElementById('active-task-pct').innerText = pct + '%';
             
+            // Check if time is up for THIS task
+            if (localProgress >= 1) {
+                if (!hud.classList.contains('task-overtime')) {
+                    hud.classList.add('task-overtime');
+                    // Play ringring sound
+                    const sfx = document.getElementById('sfx-overtime');
+                    if (sfx) {
+                        sfx.currentTime = 0;
+                        sfx.play().catch(e => console.log("Audio block"));
+                    }
+                }
+            } else {
+                hud.classList.remove('task-overtime');
+            }
+
             // Time remaining
             const taskTotalMs = trip.durationMs * taskDuration;
             const taskElapsedMs = taskTotalMs * localProgress;
             const taskRemainingMs = taskTotalMs - taskElapsedMs;
             const mins = Math.ceil(taskRemainingMs / 60000);
-            document.getElementById('active-task-time').innerText = mins + "m restantes";
+            
+            if (localProgress >= 1) {
+                document.getElementById('active-task-time').innerText = "¡TIEMPO AGOTADO!";
+            } else {
+                document.getElementById('active-task-time').innerText = mins + "m restantes";
+            }
+        }
+
+        function completeCurrentTask() {
+            let currentTask = trip.tasks.find(t => !t.completed);
+            if (currentTask) {
+                toggleTaskComplete(currentTask.id);
+                // The loop will automatically move to next task
+            }
         }
 
         function finishFlight() {
