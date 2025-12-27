@@ -825,6 +825,10 @@
 
             <!-- BOTONES SUPERIORES (DENTRO DEL PLANIFICADOR) -->
             <div class="absolute top-4 right-4 z-50 flex gap-3">
+                <button onclick="openHangar()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Mis Itinerarios">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span class="text-xs font-bold hidden sm:inline">Mis Vuelos</span>
+                </button>
                 <a href="https://github.com/vicevll/flyper" target="_blank" class="theme-toggle flex items-center justify-center" title="Ver en GitHub">
                     <i class="fa-brands fa-github text-xl"></i>
                 </a>
@@ -949,9 +953,13 @@
                         <div id="total-percent-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
                     
-                    <button onclick="showBoardingPass()" id="btn-generate-ticket" disabled 
+                    <button onclick="confirmAndSaveItinerary()" id="btn-generate-ticket" disabled 
                             class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-black dark:hover:bg-blue-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
                         Confirmar y Generar Boucher
+                    </button>
+                    
+                    <button onclick="showBoardingPass()" class="w-full mt-3 text-xs font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        Continuar sin guardar
                     </button>
                 </div>
             </div>
@@ -1344,6 +1352,27 @@
                 <button onclick="closeErrorModal()" class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
                     Entendido
                 </button>
+            </div>
+        </div>
+
+        <!-- MODAL HANGAR (ITINERARIOS GUARDADOS) -->
+        <div id="hangar-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-black text-gray-800 dark:text-white">Mi Hangar</h2>
+                        <p class="text-xs text-gray-500">Tus itinerarios guardados localmente</p>
+                    </div>
+                    <button onclick="closeHangar()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div id="hangar-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50 dark:bg-gray-900/20">
+                    <!-- Los itinerarios se inyectan aquí -->
+                </div>
+
+                <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Flyper Local Storage Storage</p>
+                </div>
             </div>
         </div>
 
@@ -2168,6 +2197,133 @@
             icon.style.display = 'block';
             waves.style.display = 'none';
             setTimeout(() => { document.getElementById('music-menu').classList.remove('open'); }, 200);
+        }
+
+        // --- HANGAR & LOCAL STORAGE LOGIC ---
+        function confirmAndSaveItinerary() {
+            saveCurrentItinerary();
+            showBoardingPass();
+        }
+
+        function saveCurrentItinerary() {
+            const sessionInput = document.getElementById('session-name-input');
+            const sessionName = sessionInput.value.trim() || "Misión de Estudio";
+            
+            if (!trip.origin || !trip.dest) {
+                showError("Plan incompleto", "Debes seleccionar origen y destino antes de guardar.");
+                return;
+            }
+
+            const itinerary = {
+                id: Date.now(),
+                name: sessionName,
+                origin: trip.origin,
+                dest: trip.dest,
+                tasks: trip.tasks,
+                durationMs: trip.durationMs,
+                distance: trip.distance,
+                date: new Date().toLocaleDateString()
+            };
+
+            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            history.unshift(itinerary); // Add to beginning
+            localStorage.setItem('flyper_hangar', JSON.stringify(history));
+
+            // Visual Feedback
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Guardado!';
+            btn.classList.replace('text-blue-600', 'text-green-600');
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.replace('text-green-600', 'text-blue-600');
+            }, 2000);
+        }
+
+        function openHangar() {
+            renderHangarList();
+            document.getElementById('hangar-modal').classList.remove('hidden');
+        }
+
+        function closeHangar() {
+            document.getElementById('hangar-modal').classList.add('hidden');
+        }
+
+        function renderHangarList() {
+            const list = document.getElementById('hangar-list');
+            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            
+            list.innerHTML = '';
+
+            if (history.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-10 opacity-40">
+                        <i class="fa-solid fa-plane-slash text-4xl mb-3"></i>
+                        <p class="text-sm">El hangar está vacío.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            history.forEach(item => {
+                const el = document.createElement('div');
+                el.className = "bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex justify-between items-center gap-4 hover:border-blue-400 transition-colors cursor-pointer group";
+                el.onclick = (e) => {
+                    if (e.target.closest('.btn-delete')) return;
+                    loadItinerary(item.id);
+                };
+
+                el.innerHTML = `
+                    <div class="flex-1">
+                        <div class="text-xs text-blue-500 font-bold uppercase tracking-tighter mb-1">${item.date}</div>
+                        <div class="font-bold text-gray-800 dark:text-white leading-tight mb-1">${item.name}</div>
+                        <div class="text-[10px] text-gray-500 flex items-center gap-1">
+                            ${item.origin.code} <i class="fa-solid fa-arrow-right text-[8px]"></i> ${item.dest.code} 
+                            • ${item.tasks.length} tareas
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="btn-delete text-gray-300 hover:text-red-500 p-2 transition-colors" onclick="deleteItinerary(${item.id})">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-500 transition-colors"></i>
+                    </div>
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        function deleteItinerary(id) {
+            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem('flyper_hangar', JSON.stringify(history));
+            renderHangarList();
+        }
+
+        function loadItinerary(id) {
+            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            const item = history.find(i => i.id === id);
+            
+            if (!item) return;
+
+            // Load data into trip object
+            trip.origin = item.origin;
+            trip.dest = item.dest;
+            trip.tasks = [...item.tasks];
+            trip.durationMs = item.durationMs;
+            trip.distance = item.distance;
+            trip.sessionName = item.name;
+
+            // Sync UI selects (manual set because TomSelect is active)
+            if (tomSelectOrigin) tomSelectOrigin.setValue(item.origin.code, true);
+            if (tomSelectDest) tomSelectDest.setValue(item.dest.code, true);
+            
+            // Sync Session Name Input
+            document.getElementById('session-name-input').value = item.name;
+
+            closeHangar();
+            updatePreview();
+            showTasksScreen();
         }
 
         // --- MAP ENGINE & LOOP ---
