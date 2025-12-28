@@ -2217,7 +2217,8 @@
         function saveFlightState() {
             if (!trip.startTime) return;
             const now = Date.now();
-            const elapsed = now - trip.startTime;
+            // Guardar el tiempo efectivo (restando pausas)
+            const elapsed = (now - trip.startTime) - totalPausedTime;
             
             const state = {
                 trip: trip,
