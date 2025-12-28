@@ -1044,6 +1044,13 @@
                     </button>
                 </div>
 
+                <!-- BOTÓN PAUSA -->
+                <div class="relative">
+                    <button onclick="togglePauseMenu()" class="music-btn shadow-lg" title="Descansar">
+                        <i class="fa-solid fa-mug-hot"></i>
+                    </button>
+                </div>
+
                 <!-- BOTÓN LISTA TAREAS -->
                 <div class="relative">
                     <button onclick="toggleTaskList()" class="music-btn shadow-lg" title="Plan de Vuelo">
@@ -1162,6 +1169,35 @@
                     </div>
                 </div>
                 <div id="flight-tasks-container" class="space-y-2"></div>
+            </div>
+
+            <!-- PAUSE MENU -->
+            <div id="pause-menu" class="music-menu task-panel glass-panel" style="z-index: 1100;">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Tomar un Descanso</h3>
+                    <button onclick="togglePauseMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">El tiempo de vuelo y la tarea actual se detendrán.</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="startPause(5)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">5m</button>
+                    <button onclick="startPause(10)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">10m</button>
+                    <button onclick="startPause(15)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">15m</button>
+                    <button onclick="startPause(20)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">20m</button>
+                    <button onclick="startPause(25)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">25m</button>
+                    <button onclick="startPause(30)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">30m</button>
+                </div>
+            </div>
+
+            <!-- PAUSE OVERLAY -->
+            <div id="pause-overlay" class="hidden absolute inset-0 z-[2000] bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-white">
+                <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                    <i class="fa-solid fa-mug-hot text-4xl"></i>
+                </div>
+                <h2 class="text-3xl font-black mb-2">En Pausa</h2>
+                <div class="text-6xl font-mono font-bold mb-8" id="pause-countdown">00:00</div>
+                <button onclick="resumeFlight()" class="bg-white text-blue-900 font-bold py-3 px-8 rounded-full hover:scale-105 transition transform shadow-xl">
+                    <i class="fa-solid fa-play mr-2"></i> Reanudar Vuelo
+                </button>
             </div>
 
             <!-- HUD SUPERIOR (TIEMPO, FINALIZACIÓN, PROGRESO) -->
@@ -2043,6 +2079,7 @@
 
             // Set Start Time and Calculate Arrival
             trip.startTime = Date.now();
+            totalPausedTime = 0;
             const arrivalDate = new Date(trip.startTime + trip.durationMs);
             const arrivalTime = arrivalDate.getHours().toString().padStart(2, '0') + ":" + arrivalDate.getMinutes().toString().padStart(2, '0');
             const arrivalDateStr = arrivalDate.getDate().toString().padStart(2, '0') + "/" + (arrivalDate.getMonth() + 1).toString().padStart(2, '0');
@@ -2092,12 +2129,20 @@
             // Ejecutar la lógica real de cancelación
             document.getElementById('confirm-modal').classList.add('hidden');
             document.getElementById('tasks-done-modal').classList.add('hidden');
+            document.getElementById('pause-overlay').classList.add('hidden');
             
             clearInterval(timerInterval);
+            if (pauseInterval) clearInterval(pauseInterval);
             stopMusic();
 
             const now = Date.now();
-            const elapsedMs = now - trip.startTime;
+            
+            let currentTotalPaused = totalPausedTime;
+            if (isPaused) {
+                currentTotalPaused += (now - pauseStartTime);
+            }
+
+            const elapsedMs = Math.max(0, (now - trip.startTime) - currentTotalPaused);
             
             // Calculate stats
             const elapsedMins = Math.floor(elapsedMs / 60000);
@@ -2131,6 +2176,10 @@
         function resetApp() {
             stopMusic(); 
             if (timerInterval) clearInterval(timerInterval);
+            if (pauseInterval) clearInterval(pauseInterval);
+            isPaused = false;
+            totalPausedTime = 0;
+            document.getElementById('pause-overlay').classList.add('hidden');
             if (map) { map.remove(); map = null; tileLayer = null; labelLayer = null; }
             
             // Close all modals
@@ -2337,6 +2386,80 @@
             showTasksScreen();
         }
 
+        // --- PAUSE LOGIC ---
+        let isPaused = false;
+        let totalPausedTime = 0;
+        let pauseStartTime = 0;
+        let pauseInterval = null;
+        let pauseEndTime = 0;
+
+        function togglePauseMenu() {
+            const menu = document.getElementById('pause-menu');
+            const taskList = document.getElementById('flight-task-list');
+            const musicMenu = document.getElementById('music-menu');
+            const activeHUD = document.getElementById('active-task-hud');
+            const isDesktop = window.innerWidth >= 1024;
+            
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (taskList) taskList.classList.remove('open');
+                if (musicMenu) musicMenu.classList.remove('open');
+                if (activeHUD) activeHUD.classList.remove('open');
+            }
+
+            if (menu) menu.classList.toggle('open');
+        }
+
+        function startPause(minutes) {
+            isPaused = true;
+            togglePauseMenu(); // Close menu
+            
+            // Stop flight timer
+            clearInterval(timerInterval);
+            
+            pauseStartTime = Date.now();
+            pauseEndTime = Date.now() + minutes * 60000;
+            
+            document.getElementById('pause-overlay').classList.remove('hidden');
+            updatePauseLoop(); // Run once immediately
+            pauseInterval = setInterval(updatePauseLoop, 1000);
+        }
+
+        function updatePauseLoop() {
+            const now = Date.now();
+            const remaining = Math.max(0, pauseEndTime - now);
+            
+            if (remaining <= 0) {
+                // Play alarm sound to signal end of break
+                const sfx = document.getElementById('sfx-overtime');
+                if (sfx) {
+                    sfx.currentTime = 0;
+                    sfx.play().catch(e => console.log("Audio block"));
+                }
+                resumeFlight();
+                return;
+            }
+            
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            document.getElementById('pause-countdown').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function resumeFlight() {
+            if (!isPaused) return;
+            
+            clearInterval(pauseInterval);
+            const pauseDuration = Date.now() - pauseStartTime;
+            totalPausedTime += pauseDuration;
+            
+            isPaused = false;
+            document.getElementById('pause-overlay').classList.add('hidden');
+            
+            // Restart flight loop
+            timerInterval = setInterval(loopFlight, 1000);
+        }
+
         // --- MAP ENGINE & LOOP ---
         function initMap() {
             setTimeout(() => {
@@ -2378,7 +2501,7 @@
 
         function loopFlight() {
             const now = Date.now();
-            const elapsed = now - trip.startTime;
+            const elapsed = (now - trip.startTime) - totalPausedTime;
             let progress = elapsed / trip.durationMs;
 
             if (progress >= 1) {
