@@ -1446,6 +1446,20 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="src/airports.js"></script>
     <script>
+        // --- UTILS ---
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        }
+
         // --- THEME & MAP LOGIC ---
         let isDarkMode = false;
         let map = null, tileLayer = null, labelLayer = null;
@@ -1599,7 +1613,7 @@
                         <i class="fa-solid fa-grip-vertical"></i>
                     </div>
                     <div class="flex-1">
-                        <div class="font-semibold text-gray-800 dark:text-white text-sm">${task.title}</div>
+                        <div class="font-semibold text-gray-800 dark:text-white text-sm">${escapeHTML(task.title)}</div>
                         <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">${taskMin} min</div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -1724,7 +1738,7 @@
                                 <i class="fa-${task.completed ? 'solid' : 'regular'} fa-circle-check"></i>
                             </button>
                             <span class="${task.completed ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200 font-medium'}">
-                                ${task.title}
+                                ${escapeHTML(task.title)}
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
@@ -1997,8 +2011,8 @@
             trip.sessionName = sessionInput.value.trim() || "Misión de Estudio";
             document.getElementById('ticket-session-name').innerText = trip.sessionName;
 
-            document.getElementById('ticket-origin').innerText = trip.origin.code;
-            document.getElementById('ticket-dest').innerText = trip.dest.code;
+            document.getElementById('ticket-origin').innerText = escapeHTML(trip.origin.code);
+            document.getElementById('ticket-dest').innerText = escapeHTML(trip.dest.code);
             document.getElementById('ticket-duration').innerText = document.getElementById('preview-time').innerText;
             
             // Calculate ETA
@@ -2369,9 +2383,9 @@
                 el.innerHTML = `
                     <div class="flex-1">
                         <div class="text-xs text-blue-500 font-bold uppercase tracking-tighter mb-1">${item.date}</div>
-                        <div class="font-bold text-gray-800 dark:text-white leading-tight mb-1">${item.name}</div>
+                        <div class="font-bold text-gray-800 dark:text-white leading-tight mb-1">${escapeHTML(item.name)}</div>
                         <div class="text-[10px] text-gray-500 flex items-center gap-1">
-                            ${item.origin.code} <i class="fa-solid fa-arrow-right text-[8px]"></i> ${item.dest.code} 
+                            ${escapeHTML(item.origin.code)} <i class="fa-solid fa-arrow-right text-[8px]"></i> ${escapeHTML(item.dest.code)} 
                             • ${item.tasks.length} tareas
                         </div>
                     </div>
