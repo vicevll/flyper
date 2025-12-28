@@ -2119,11 +2119,19 @@
             const completedTasks = trip.tasks.filter(t => t.completed).length;
             const taskPct = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
-            // Diferenciar entre Abortar y Aterrizar
+            // Diferenciar entre Abortar, Aterrizar o Tareas Completadas
             const isArrival = progress >= 0.99;
+            const allTasksDone = totalTasks > 0 && completedTasks === totalTasks;
             const titleEl = document.getElementById('summary-title');
+            
             if (titleEl) {
-                titleEl.innerText = isArrival ? "¡Destino Alcanzado!" : "Vuelo Interrumpido";
+                if (isArrival) {
+                    titleEl.innerText = "¡Destino Alcanzado!";
+                } else if (allTasksDone) {
+                    titleEl.innerText = "Resumen de tu Vuelo";
+                } else {
+                    titleEl.innerText = "Vuelo Interrumpido";
+                }
             }
 
             // Update modal UI
