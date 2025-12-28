@@ -2121,6 +2121,16 @@
             document.getElementById('summary-task-count').innerText = `${completedTasks}/${totalTasks}`;
             document.getElementById('summary-task-bar').style.width = `${taskPct}%`;
 
+            // --- MEJORA: Cambio de pantalla inmediato ---
+            // Limpiamos el mapa y volvemos a la pantalla 1 de fondo
+            if (map) { 
+                map.remove(); 
+                map = null; 
+                tileLayer = null; 
+                labelLayer = null; 
+            }
+            showScreen('screen-planner');
+
             // Show modal
             document.getElementById('summary-modal').classList.remove('hidden');
 
