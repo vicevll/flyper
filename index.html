@@ -1241,12 +1241,6 @@
                         <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">km Recorridos</div>
                     </div>
                 </div>
-                
-                <div class="flex justify-center mt-4 pointer-events-auto">
-                    <button id="btn-finish" onclick="resetApp()" class="hidden bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-xl transform transition hover:scale-105">
-                        Aterrizar y Finalizar
-                    </button>
-                </div>
             </div>
 
             <!-- BOUCHER ASOMÁNDOSE (INFERIOR CENTRO) -->
@@ -1309,11 +1303,11 @@
         <!-- MODAL RESUMEN (OCULTO) -->
         <div id="summary-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all scale-100 border border-gray-200 dark:border-gray-700">
-                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-                    <i class="fa-solid fa-plane-slash text-2xl"></i>
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
+                    <i class="fa-solid fa-plane-arrival text-2xl"></i>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Vuelo Terminado</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Resumen de tu sesión</p>
+                <h2 id="summary-title" class="text-2xl font-black text-gray-800 dark:text-white mb-2">¡Vuelo Completado!</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Resumen de tu sesión de estudio</p>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
@@ -1338,7 +1332,7 @@
                     </div>
                 </div>
 
-                <button onclick="resetApp()" class="w-full bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                <button onclick="resetApp()" class="w-full bg-blue-600 dark:bg-blue-500 text-white font-black py-4 rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all text-lg">
                     Planificar Nuevo Vuelo
                 </button>
             </div>
@@ -2095,20 +2089,12 @@
             clearFlightState();
             document.getElementById('confirm-modal').classList.add('hidden');
             document.getElementById('tasks-done-modal').classList.add('hidden');
-            document.getElementById('pause-overlay').classList.add('hidden');
             
             clearInterval(timerInterval);
-            if (pauseInterval) clearInterval(pauseInterval);
             stopMusic();
 
             const now = Date.now();
-            
-            let currentTotalPaused = totalPausedTime;
-            if (isPaused) {
-                currentTotalPaused += (now - pauseStartTime);
-            }
-
-            const elapsedMs = Math.max(0, (now - trip.startTime) - currentTotalPaused);
+            const elapsedMs = (now - trip.startTime) - totalPausedTime;
             
             // Calculate stats
             const elapsedMins = Math.floor(elapsedMs / 60000);
@@ -2121,6 +2107,13 @@
             const totalTasks = trip.tasks.length;
             const completedTasks = trip.tasks.filter(t => t.completed).length;
             const taskPct = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+            // Diferenciar entre Abortar y Aterrizar
+            const isArrival = progress >= 0.99;
+            const titleEl = document.getElementById('summary-title');
+            if (titleEl) {
+                titleEl.innerText = isArrival ? "¡Destino Alcanzado!" : "Vuelo Interrumpido";
+            }
 
             // Update modal UI
             document.getElementById('summary-time').innerText = `${elapsedHrs > 0 ? elapsedHrs + 'h ' : ''}${remainingMins}m`;
@@ -2692,10 +2685,15 @@
             if (pauseInterval) clearInterval(pauseInterval);
             isPaused = false;
             document.getElementById('pause-overlay').classList.add('hidden');
-            document.getElementById('btn-finish').classList.remove('hidden');
+            
+            // En lugar de mostrar un botón pequeño, disparamos el resumen automáticamente
             document.getElementById('hud-timer').innerText = "LLEGADA";
-            document.getElementById('active-task-hud').style.opacity = '0';
             stopMusic(); 
+            
+            // Lanzamos el resumen con una pequeña demora para que se sienta el aterrizaje
+            setTimeout(() => {
+                executeCancellation();
+            }, 1000);
         }
     </script>
 </body>
