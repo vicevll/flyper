@@ -2,6 +2,10 @@
 
 Flyper es una aplicación web interactiva diseñada para transformar tus sesiones de estudio en una experiencia de vuelo inmersiva. Planifica tu trayecto, organiza tus tareas y "despega" hacia la productividad.
 
+## 🚀 Cómo Empezar
+
+Simplemente visita [flyper.app](https://flyper.app/) en cualquier navegador web moderno. No requiere instalación ni servidores externos.
+
 ## 🚀 Características Principales
 
 ### 🛫 Planificación de Vuelo
