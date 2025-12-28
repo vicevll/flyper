@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Flyper - Study Timer
+# https://flyper.app/
