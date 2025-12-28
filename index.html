@@ -1121,8 +1121,8 @@
                     <div class="track-item" onclick="playTrack('src/sounds/Musica_lluvia.mp3', this)">
                         <i class="fa-solid fa-cloud-rain text-teal-500"></i> 
                         <div class="flex flex-col leading-tight">
-                            <span>Lluvia Suave (Local)</span>
-                            <span class="text-[9px] text-gray-400 font-normal">Ambiente tranquilo (Offline)</span>
+                            <span>Lluvia Suave</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Ambiente tranquilo</span>
                         </div>
                     </div>
                 </div>
@@ -1418,7 +1418,7 @@
                 </div>
 
                 <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Flyper Local Storage Storage</p>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Flyper hangar</p>
                 </div>
             </div>
         </div>
@@ -1447,6 +1447,7 @@
 
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="src/airports.js"></script>
     <script>
         // --- THEME & MAP LOGIC ---
         let isDarkMode = false;
@@ -1493,63 +1494,7 @@
         }
 
         // --- DATA ---
-        const airports = [
-            // --- SUDAMÉRICA ---
-            // Chile
-            { code: 'SCL', city: 'Santiago', country: 'Chile', lat: -33.393, lon: -70.793 },
-            { code: 'ANF', city: 'Antofagasta', country: 'Chile', lat: -23.444, lon: -70.445 },
-            { code: 'CCP', city: 'Concepción', country: 'Chile', lat: -36.772, lon: -73.063 },
-            { code: 'PMC', city: 'Puerto Montt', country: 'Chile', lat: -41.434, lon: -73.097 },
-            { code: 'IQQ', city: 'Iquique', country: 'Chile', lat: -20.535, lon: -70.181 },
-            { code: 'PUQ', city: 'Punta Arenas', country: 'Chile', lat: -53.002, lon: -70.855 },
-            // Brasil
-            { code: 'GRU', city: 'São Paulo', country: 'Brasil', lat: -23.435, lon: -46.473 },
-            { code: 'CGH', city: 'São Paulo', country: 'Brasil', lat: -23.626, lon: -46.656 },
-            { code: 'BSB', city: 'Brasilia', country: 'Brasil', lat: -15.869, lon: -47.920 },
-            { code: 'GIG', city: 'Río de Janeiro', country: 'Brasil', lat: -22.809, lon: -43.250 },
-            { code: 'VCP', city: 'Campinas', country: 'Brasil', lat: -23.007, lon: -47.134 },
-            // Perú
-            { code: 'LIM', city: 'Lima', country: 'Perú', lat: -12.022, lon: -77.114 },
-            { code: 'CUZ', city: 'Cusco', country: 'Perú', lat: -13.535, lon: -71.938 },
-            { code: 'AQP', city: 'Arequipa', country: 'Perú', lat: -16.341, lon: -71.566 },
-            { code: 'IQT', city: 'Iquitos', country: 'Perú', lat: -3.784, lon: -73.309 },
-            { code: 'PIU', city: 'Piura', country: 'Perú', lat: -5.206, lon: -80.616 },
-            // Argentina
-            { code: 'EZE', city: 'Buenos Aires', country: 'Argentina', lat: -34.815, lon: -58.535 },
-            { code: 'AEP', city: 'Buenos Aires', country: 'Argentina', lat: -34.559, lon: -58.415 },
-            { code: 'COR', city: 'Córdoba', country: 'Argentina', lat: -31.323, lon: -64.208 },
-            { code: 'MDZ', city: 'Mendoza', country: 'Argentina', lat: -32.831, lon: -68.793 },
-            { code: 'BRC', city: 'Bariloche', country: 'Argentina', lat: -41.151, lon: -71.157 },
-            // Otros Sudamérica
-            { code: 'BOG', city: 'Bogotá', country: 'Colombia', lat: 4.701, lon: -74.146 },
-            { code: 'MDE', city: 'Medellín', country: 'Colombia', lat: 6.164, lon: -75.423 },
-            { code: 'MVD', city: 'Montevideo', country: 'Uruguay', lat: -34.838, lon: -56.028 },
-            { code: 'UIO', city: 'Quito', country: 'Ecuador', lat: -0.222, lon: -78.509 },
-
-            // --- NORTEAMÉRICA ---
-            { code: 'MEX', city: 'C. de México', country: 'México', lat: 19.436, lon: -99.072 },
-            { code: 'CUN', city: 'Cancún', country: 'México', lat: 21.036, lon: -86.877 },
-            { code: 'JFK', city: 'Nueva York', country: 'USA', lat: 40.641, lon: -73.778 },
-            { code: 'LAX', city: 'Los Ángeles', country: 'USA', lat: 33.941, lon: -118.408 },
-            { code: 'MIA', city: 'Miami', country: 'USA', lat: 25.793, lon: -80.290 },
-            { code: 'YYZ', city: 'Toronto', country: 'Canadá', lat: 43.677, lon: -79.624 },
-            { code: 'YVR', city: 'Vancouver', country: 'Canadá', lat: 49.194, lon: -123.177 },
-
-            // --- EUROPA ---
-            { code: 'MAD', city: 'Madrid', country: 'España', lat: 40.498, lon: -3.567 },
-            { code: 'BCN', city: 'Barcelona', country: 'España', lat: 41.297, lon: 2.083 },
-            { code: 'PAR', city: 'París', country: 'Francia', lat: 48.856, lon: 2.352 },
-            { code: 'LON', city: 'Londres', country: 'Reino Unido', lat: 51.507, lon: -0.127 },
-            { code: 'BER', city: 'Berlín', country: 'Alemania', lat: 52.520, lon: 13.405 },
-            { code: 'ROM', city: 'Roma', country: 'Italia', lat: 41.902, lon: 12.496 },
-
-            // --- ASIA / OCEANÍA ---
-            { code: 'TYO', city: 'Tokio', country: 'Japón', lat: 35.689, lon: 139.691 },
-            { code: 'ICN', city: 'Seúl', country: 'Corea del Sur', lat: 37.460, lon: 126.440 },
-            { code: 'BKK', city: 'Bangkok', country: 'Tailandia', lat: 13.756, lon: 100.501 },
-            { code: 'DXB', city: 'Dubái', country: 'EAU', lat: 25.204, lon: 55.270 },
-            { code: 'SYD', city: 'Sídney', country: 'Australia', lat: -33.868, lon: 151.209 }
-        ];
+        // Los aeropuertos se cargan desde src/airports.js
 
         // --- TASK LOGIC ---
         function showTasksScreen() {
@@ -1923,6 +1868,10 @@
         // --- INIT & CORE LOGIC ---
         window.onload = () => { 
             loadSelects(); 
+            if (restoreFlightState()) {
+                showScreen('screen-flight');
+                initMap();
+            }
         };
 
         let tomSelectOrigin, tomSelectDest;
@@ -2095,6 +2044,9 @@
             const hudArrivalDate = document.getElementById('hud-arrival-date');
             if (hudArrivalDate) hudArrivalDate.innerText = arrivalFullDate;
 
+            // Save initial state
+            saveFlightState();
+
             // Logic to handle desktop/mobile differences
             const isDesktop = window.innerWidth >= 1024;
             const btn = document.getElementById('btn-active-task-toggle');
@@ -2127,6 +2079,7 @@
 
         function executeCancellation() {
             // Ejecutar la lógica real de cancelación
+            clearFlightState();
             document.getElementById('confirm-modal').classList.add('hidden');
             document.getElementById('tasks-done-modal').classList.add('hidden');
             document.getElementById('pause-overlay').classList.add('hidden');
@@ -2174,6 +2127,7 @@
         }
 
         function resetApp() {
+            clearFlightState();
             stopMusic(); 
             if (timerInterval) clearInterval(timerInterval);
             if (pauseInterval) clearInterval(pauseInterval);
@@ -2257,6 +2211,85 @@
             icon.style.display = 'block';
             waves.style.display = 'none';
             setTimeout(() => { document.getElementById('music-menu').classList.remove('open'); }, 200);
+        }
+
+        // --- FLIGHT PERSISTENCE LOGIC ---
+        function saveFlightState() {
+            if (!trip.startTime) return;
+            const now = Date.now();
+            const elapsed = now - trip.startTime;
+            
+            const state = {
+                trip: trip,
+                elapsed: elapsed,
+                timestamp: now
+            };
+            localStorage.setItem('flyper_active_flight', JSON.stringify(state));
+        }
+
+        function clearFlightState() {
+            localStorage.removeItem('flyper_active_flight');
+        }
+
+        function restoreFlightState() {
+            const saved = localStorage.getItem('flyper_active_flight');
+            if (!saved) return false;
+
+            try {
+                const state = JSON.parse(saved);
+                // Validar si el estado tiene sentido (ej: tiene origen/destino)
+                if (!state.trip || !state.trip.origin || !state.trip.dest) {
+                    clearFlightState();
+                    return false;
+                }
+
+                // Restaurar trip
+                trip = state.trip;
+                
+                // Recalcular startTime para que el tiempo transcurrido sea el mismo que cuando se cerró
+                // "Siga donde se quedó" implica pausar el tiempo.
+                trip.startTime = Date.now() - state.elapsed;
+
+                // Restaurar UI básica
+                if(tomSelectOrigin) tomSelectOrigin.setValue(trip.origin.code, true);
+                if(tomSelectDest) tomSelectDest.setValue(trip.dest.code, true);
+                document.getElementById('session-name-input').value = trip.sessionName;
+                document.getElementById('ticket-session-name').innerText = trip.sessionName;
+                
+                // Update displays like startFlight does
+                updateFlightDisplays(); 
+
+                return true;
+            } catch (e) {
+                console.error("Error restoring flight:", e);
+                clearFlightState();
+                return false;
+            }
+        }
+
+        function updateFlightDisplays() {
+            // Helper to update text elements same as startFlight
+            const listTitle = document.getElementById('flight-list-session-name');
+            if (listTitle) listTitle.innerText = trip.sessionName;
+
+            document.getElementById('boucher-origin').innerText = trip.origin.code;
+            document.getElementById('boucher-dest').innerText = trip.dest.code;
+            document.getElementById('boucher-duration').innerText = formatTime(Math.round(trip.durationMs / 60000));
+
+            const arrivalDate = new Date(trip.startTime + trip.durationMs);
+            const arrivalTime = arrivalDate.getHours().toString().padStart(2, '0') + ":" + arrivalDate.getMinutes().toString().padStart(2, '0');
+            const arrivalDateStr = arrivalDate.getDate().toString().padStart(2, '0') + "/" + (arrivalDate.getMonth() + 1).toString().padStart(2, '0');
+            const arrivalFullDate = arrivalDateStr + "/" + arrivalDate.getFullYear().toString().substr(-2);
+            
+            const boucherArrival = document.getElementById('boucher-arrival');
+            if (boucherArrival) boucherArrival.innerText = arrivalTime;
+            const boucherArrivalDate = document.getElementById('boucher-arrival-date');
+            if (boucherArrivalDate) boucherArrivalDate.innerText = arrivalDateStr;
+            
+            const hudArrival = document.getElementById('hud-arrival');
+            if (hudArrival) hudArrival.innerText = arrivalTime;
+            const hudArrivalDate = document.getElementById('hud-arrival-date');
+            if (hudArrivalDate) hudArrivalDate.innerText = arrivalFullDate;
         }
 
         // --- HANGAR & LOCAL STORAGE LOGIC ---
@@ -2530,6 +2563,9 @@
             const icon = document.querySelector('.plane-icon');
             if(icon) icon.style.transform = `rotate(${angleDeg}deg)`; 
 
+            // Save state periodically
+            saveFlightState();
+
             // Active Task Logic
             updateActiveTaskHUD(progress);
         }
@@ -2635,6 +2671,7 @@
         }
 
         function finishFlight() {
+            clearFlightState();
             document.getElementById('btn-finish').classList.remove('hidden');
             document.getElementById('hud-timer').innerText = "LLEGADA";
             document.getElementById('active-task-hud').style.opacity = '0';
