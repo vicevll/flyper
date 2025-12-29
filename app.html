@@ -1404,6 +1404,56 @@
             </div>
         </div>
 
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[1000] hidden transition-opacity duration-300 pointer-events-none">
+            <div class="glass-panel px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gray-200 dark:border-gray-700">
+                <i id="toast-icon" class="fa-solid fa-check-circle text-green-500"></i>
+                <span id="toast-msg" class="font-bold text-gray-800 dark:text-white text-sm">Notificación</span>
+            </div>
+        </div>
+
+        <!-- MODAL IMPORTAR VUELO -->
+        <div id="import-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+                        <i class="fa-solid fa-file-import text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-black text-gray-800 dark:text-white mb-1">Importar Plan de Vuelo</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Se ha detectado un itinerario compartido</p>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl mb-6 border border-gray-100 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="font-bold text-gray-800 dark:text-white text-lg" id="import-name">Nombre del Plan</div>
+                        <div class="text-xs font-mono bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-lg" id="import-duration">-- min</div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                        <div class="flex items-center gap-2">
+                            <span id="import-origin" class="font-black text-gray-800 dark:text-gray-200">XXX</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                            <span id="import-dest" class="font-black text-gray-800 dark:text-gray-200">YYY</span>
+                        </div>
+                        <div id="import-task-count">0 tareas</div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <button onclick="importFlyNow()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition transform hover:scale-[1.02]">
+                        <i class="fa-solid fa-plane-departure mr-2"></i> Volar Ahora
+                    </button>
+                    <div class="flex gap-3">
+                        <button onclick="importSave()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                            <i class="fa-solid fa-save mr-1"></i> Guardar
+                        </button>
+                        <button onclick="closeImportModal()" class="flex-1 bg-transparent border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-red-500 font-bold py-3 rounded-xl transition">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- MODAL HANGAR (ITINERARIOS GUARDADOS) -->
         <div id="hangar-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
             <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -1885,6 +1935,7 @@
         // --- INIT & CORE LOGIC ---
         window.onload = () => { 
             loadSelects(); 
+            checkUrlForPlan();
             if (restoreFlightState()) {
                 showScreen('screen-flight');
                 initMap();
@@ -2398,7 +2449,7 @@
                 const el = document.createElement('div');
                 el.className = "bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex justify-between items-center gap-4 hover:border-blue-400 transition-colors cursor-pointer group";
                 el.onclick = (e) => {
-                    if (e.target.closest('.btn-delete')) return;
+                    if (e.target.closest('.btn-action')) return;
                     loadItinerary(item.id);
                 };
 
@@ -2411,15 +2462,199 @@
                             • ${item.tasks.length} tareas
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button class="btn-delete text-gray-300 hover:text-red-500 p-2 transition-colors" onclick="deleteItinerary(${item.id})">
+                    <div class="flex items-center gap-1">
+                        <button class="btn-action text-gray-300 hover:text-blue-500 p-2 transition-colors" title="Compartir" onclick="shareItinerary(${item.id})">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </button>
+                        <button class="btn-action text-gray-300 hover:text-red-500 p-2 transition-colors" title="Eliminar" onclick="deleteItinerary(${item.id})">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
-                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-500 transition-colors"></i>
+                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-500 transition-colors ml-1"></i>
                     </div>
                 `;
                 list.appendChild(el);
             });
+        }
+
+        // --- SHARING LOGIC ---
+        function shareItinerary(id) {
+            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            const item = history.find(i => i.id === id);
+            if (!item) return;
+
+            // Compact structure
+            const shareable = {
+                n: item.name,
+                o: item.origin.code, // Only save code
+                d: item.dest.code,
+                t: item.durationMs,
+                tasks: item.tasks.map(t => ({
+                    n: t.title,
+                    p: t.percent
+                }))
+            };
+
+            try {
+                const json = JSON.stringify(shareable);
+                const encoded = btoa(unescape(encodeURIComponent(json)));
+                const url = window.location.origin + window.location.pathname + "?plan=" + encoded;
+
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast("¡Link copiado al portapapeles!", "success");
+                }).catch(err => {
+                    console.error('Error copying link: ', err);
+                    showToast("Error al copiar link", "error");
+                });
+            } catch (e) {
+                console.error("Encoding error:", e);
+                showToast("Error al generar el link", "error");
+            }
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-msg');
+            const iconEl = document.getElementById('toast-icon');
+
+            msgEl.innerText = msg;
+            if (type === "success") {
+                iconEl.className = "fa-solid fa-check-circle text-green-500";
+            } else {
+                iconEl.className = "fa-solid fa-circle-exclamation text-red-500";
+            }
+
+            toast.classList.remove('hidden');
+            toast.classList.remove('opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                    toast.classList.remove('opacity-0'); // Reset for next time
+                }, 300);
+            }, 3000);
+        }
+
+        // --- IMPORT LOGIC ---
+        let pendingImport = null;
+
+        function checkUrlForPlan() {
+            const params = new URLSearchParams(window.location.search);
+            const encoded = params.get('plan');
+
+            if (encoded) {
+                try {
+                    const json = decodeURIComponent(escape(atob(encoded)));
+                    const data = JSON.parse(json);
+                    validateAndPrepareImport(data);
+                    
+                    // Clean URL
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, newUrl);
+                } catch (e) {
+                    console.error("Decoding error:", e);
+                    showToast("Link de vuelo inválido", "error");
+                }
+            }
+        }
+
+        function validateAndPrepareImport(data) {
+            // Basic validation
+            if (!data.n || !data.o || !data.d || !data.tasks) {
+                showToast("Datos del plan corruptos", "error");
+                return;
+            }
+
+            const originAp = getAirport(data.o);
+            const destAp = getAirport(data.d);
+
+            if (!originAp || !destAp) {
+                showToast("Aeropuerto desconocido en el plan", "error");
+                return;
+            }
+
+            // Reconstruction
+            pendingImport = {
+                name: data.n,
+                origin: originAp,
+                dest: destAp,
+                durationMs: data.t || 0, // Fallback, will be recalculated if needed or used
+                tasks: data.tasks.map((t, idx) => ({
+                    id: Date.now().toString() + idx,
+                    title: t.n,
+                    percent: t.p,
+                    completed: false
+                }))
+            };
+
+            // Recalculate duration/distance if missing or just to be safe? 
+            // Better to recalculate distance, but duration might be custom.
+            // If duration is provided in data.t, we use it.
+            // However, calculateDist is available.
+            const dist = calculateDist(originAp.lat, originAp.lon, destAp.lat, destAp.lon);
+            pendingImport.distance = dist;
+            if (!pendingImport.durationMs) {
+                const timeHrs = dist / 850; 
+                pendingImport.durationMs = (Math.round(timeHrs * 60) + 15) * 60 * 1000;
+            }
+
+            // Populate Modal
+            document.getElementById('import-name').innerText = pendingImport.name;
+            document.getElementById('import-duration').innerText = formatTime(Math.round(pendingImport.durationMs / 60000));
+            document.getElementById('import-origin').innerText = pendingImport.origin.code;
+            document.getElementById('import-dest').innerText = pendingImport.dest.code;
+            document.getElementById('import-task-count').innerText = pendingImport.tasks.length + " tareas";
+
+            document.getElementById('import-modal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('import-modal').classList.add('hidden');
+            pendingImport = null;
+        }
+
+        function importFlyNow() {
+            if (!pendingImport) return;
+            
+            trip = {
+                ...pendingImport,
+                startTime: 0,
+                sessionName: pendingImport.name
+            };
+            
+            // Sync UI
+            if(tomSelectOrigin) tomSelectOrigin.setValue(trip.origin.code, true);
+            if(tomSelectDest) tomSelectDest.setValue(trip.dest.code, true);
+            document.getElementById('session-name-input').value = trip.sessionName || trip.name;
+            
+            updatePreview(); // To refresh UI boxes
+            showTasksScreen();
+            
+            closeImportModal();
+            showToast("Plan importado correctamente");
+        }
+
+        function importSave() {
+            if (!pendingImport) return;
+
+            const itinerary = {
+                id: Date.now(),
+                name: pendingImport.name,
+                origin: pendingImport.origin,
+                dest: pendingImport.dest,
+                tasks: pendingImport.tasks,
+                durationMs: pendingImport.durationMs,
+                distance: pendingImport.distance,
+                date: new Date().toLocaleDateString()
+            };
+
+            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            history.unshift(itinerary);
+            localStorage.setItem('flyper_hangar', JSON.stringify(history));
+            
+            closeImportModal();
+            showToast("Plan guardado en el Hangar");
+            openHangar(); // Show user where it went
         }
 
         function deleteItinerary(id) {
