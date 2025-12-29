@@ -1,0 +1,2729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="src/Flyper Logo.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flyper - Study Timer</title>
+    
+    <!-- Tailwind CSS with Dark Mode Config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            text: '#f8fafc'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Tom Select (Searchable Dropdown) -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SortableJS for Drag and Drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+    <!-- Confetti.js -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* FIX: Asegurar altura completa para que el mapa se renderice */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Tom Select Customization (Dark/Light Mode) --- */
+        .ts-control {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            font-weight: 500;
+        }
+        .ts-control .item {
+            color: #1f2937; /* gray-800 */
+        }
+        html.dark .ts-control .item {
+            color: #f3f4f6; /* gray-100 */
+        }
+        .ts-control input {
+            color: #1f2937 !important;
+        }
+        html.dark .ts-control input {
+            color: #f3f4f6 !important;
+        }
+        
+        .ts-dropdown {
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            z-index: 200;
+        }
+        html.dark .ts-dropdown {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #f3f4f6;
+        }
+        .ts-dropdown .option {
+            padding: 10px 16px;
+        }
+        html.dark .ts-dropdown .option {
+            color: #e5e7eb;
+        }
+        .ts-dropdown .option.active, .ts-dropdown .option:hover {
+            background-color: #eff6ff; /* blue-50 */
+            color: #1d4ed8; /* blue-700 */
+        }
+        html.dark .ts-dropdown .option.active, html.dark .ts-dropdown .option:hover {
+            background-color: #1e3a8a; /* blue-900 */
+            color: #60a5fa; /* blue-400 */
+        }
+        .ts-dropdown .optgroup-header {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        html.dark .ts-dropdown .optgroup-header {
+            background-color: #374151;
+            color: #9ca3af;
+        }
+
+        /* Original Styles */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Mapa a pantalla completa */
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: #f3f4f6; /* Matching bg-gray-100 */
+            transition: filter 0.5s ease;
+        }
+        
+        /* Ajuste para mapa oscuro si tarda en cargar tiles */
+        html.dark #map {
+            background: #030712; /* Matching bg-gray-950 */
+        }
+
+        /* Estilo del Avión */
+        .plane-icon {
+            color: #0077b6; /* Color azul solicitado */
+            filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.4));
+            transition: transform 0.2s linear;
+            transform-origin: center center;
+            display: block;
+        }
+        
+        html.dark .plane-icon {
+            color: #38bdf8; /* Azul más claro en modo oscuro */
+            filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.8));
+        }
+
+        /* Transiciones de Pantalla */
+        .screen {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .hidden-screen {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transform: scale(0.95);
+        }
+        .active-screen {
+            opacity: 1;
+            pointer-events: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            transform: scale(1);
+        }
+
+        /* Ticket Styles */
+        .boarding-pass {
+            /* background definido en clases tailwind */
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease;
+        }
+        .pass-header {
+            background: #0077b6; /* Coincidir con el azul del avión */
+            color: white;
+            padding: 1.5rem;
+        }
+        html.dark .pass-header {
+            background: #0ea5e9;
+        }
+        .pass-body {
+            padding: 2rem;
+            transition: background-color 0.3s ease;
+        }
+        .pass-footer {
+            padding: 1.5rem;
+            border-top: 2px dashed #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        html.dark .pass-footer {
+            border-top-color: #475569;
+        }
+
+        /* Glass HUD & Buttons */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
+        }
+        html.dark .glass-panel {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #f8fafc;
+        }
+
+        .hud-panel {
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            @apply glass-panel; /* Usando mixin conceptual */
+        }
+        
+        /* Aplicando estilos glass manualmente a clases específicas con sombras mejoradas */
+        .hud-panel, .music-btn, .music-menu, .theme-toggle, .task-panel, .ts-dropdown, .cancel-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.5)) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255,255,255,0.6) !important;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2), 0 4px 10px -5px rgba(0, 0, 0, 0.1) !important;
+        }
+        html.dark .hud-panel, html.dark .music-btn, html.dark .music-menu, html.dark .theme-toggle, html.dark .task-panel, html.dark .ts-dropdown, html.dark .cancel-btn {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.7)) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), 0 5px 15px -5px rgba(0, 0, 0, 0.3) !important;
+            color: #e2e8f0;
+        }
+
+        /* Music Player Styles */
+        .music-btn, .theme-toggle, .cancel-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s, color 0.2s;
+            color: #334155;
+            z-index: 101;
+        }
+        .music-btn:hover, .theme-toggle:hover {
+            transform: scale(1.1);
+            background: white;
+            color: #0077b6;
+        }
+        html.dark .music-btn:hover, html.dark .theme-toggle:hover {
+            background: #1e293b;
+            color: #38bdf8;
+        }
+        
+        /* Botón de Cancelar específico */
+        .cancel-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(239, 68, 68, 0.5); /* Borde rojo suave */
+            color: #ef4444; /* Texto rojo */
+        }
+        html.dark .cancel-btn {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+        .cancel-btn:hover {
+            background: #ef4444 !important;
+            color: white !important;
+            border-color: #ef4444 !important;
+        }
+        
+        .music-btn.active {
+            color: #0077b6;
+            border: 2px solid #0077b6;
+        }
+        html.dark .music-btn.active {
+            color: #38bdf8;
+            border: 2px solid #38bdf8;
+        }
+        
+        /* Animación de ondas musicales */
+        @keyframes sound-wave {
+            0% { transform: scaleY(1); }
+            50% { transform: scaleY(0.5); }
+            100% { transform: scaleY(1); }
+        }
+        .wave-bar {
+            width: 3px;
+            background-color: #0077b6;
+            margin: 0 1px;
+            border-radius: 2px;
+            animation: sound-wave 1s infinite ease-in-out;
+            display: none;
+        }
+        html.dark .wave-bar { background-color: #38bdf8; }
+        .playing .wave-bar { display: block; }
+        .playing .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+        .playing .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Standardized Flight Modals (Music, Tasks, Active Task) */
+        .music-menu, .task-overlay-list {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            width: 320px;
+            max-height: 60vh; /* Increased slightly */
+            overflow-y: auto !important; /* Restore scrolling */
+            border-radius: 20px;
+            padding: 16px;
+            z-index: 1000; /* High z-index like active task */
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 0;
+        }
+
+        .music-menu.open, .task-overlay-list.open {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Active Task Menu specific (positioned at top) */
+        .active-task-menu {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            width: 320px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 0;
+            border-radius: 20px;
+            padding: 16px;
+        }
+
+        .active-task-menu.open {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Desktop specific positioning (>= 1024px) */
+        @media (min-width: 1024px) {
+            .active-task-menu {
+                left: 24px !important;
+                top: 100px !important;
+                transform: translateY(-20px) !important;
+                width: 380px !important; /* Enlarged */
+                max-height: 35vh;
+            }
+            .task-overlay-list {
+                left: 24px !important;
+                top: 310px !important; /* Brought closer to Active Task (was 400px) */
+                transform: translateY(-20px) !important;
+                width: 380px !important; /* Enlarged */
+                max-height: 55vh;
+            }
+            .active-task-menu.open, .task-overlay-list.open, .music-menu.open {
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+            /* Music menu top-right positioning */
+            .music-menu {
+                top: 100px !important;
+                right: 80px !important; /* Moved further left to clear buttons (was 24px) */
+                left: auto !important;
+                transform: translateY(-20px) !important;
+            }
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 12px; 
+            gap: 12px; 
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #475569;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        html.dark .track-item { color: #cbd5e1; }
+        .track-item:hover {
+            background: #f1f5f9;
+        }
+        html.dark .track-item:hover {
+            background: #334155;
+        }
+        .track-item.selected {
+            background: #e0f2fe; /* blue-50 */
+            color: #0077b6;
+            font-weight: 600;
+        }
+        html.dark .track-item.selected {
+            background: #0c4a6e; /* sky-900 */
+            color: #7dd3fc; /* sky-300 */
+        }
+        
+        /* Slider de Volumen */
+        input[type=range] {
+            width: 100%; 
+            height: 6px;
+            border-radius: 4px;
+            appearance: none;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #0077b6;
+            margin-top: -5px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        html.dark input[type=range]::-webkit-slider-thumb {
+            background: #38bdf8;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        html.dark input[type=range]::-webkit-slider-runnable-track {
+            background: #475569;
+        }
+
+        /* Estilos específicos para To-Do List */
+        .task-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: grab;
+        }
+        .task-card:active {
+            cursor: grabbing;
+        }
+        .task-card.sortable-ghost {
+            opacity: 0.4;
+            background: #e2e8f0;
+        }
+        html.dark .task-card.sortable-ghost {
+            background: #334155;
+        }
+        
+        /* Task Panel en vuelo (handled by standardized class) */
+        .task-overlay-list {
+            /* Styles inherited from .active-task-menu / .music-menu combo above */
+        }
+        
+        .active-task-pulse {
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0% { border-color: rgba(14, 165, 233, 0.5); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
+            70% { border-color: rgba(14, 165, 233, 1); box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+            100% { border-color: rgba(14, 165, 233, 0.5); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+
+        /* Flight task list styles */
+        .flight-task-item {
+            transition: all 0.2s ease;
+        }
+        .flight-task-edit-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, margin-top 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+        .flight-task-edit-menu.open {
+            max-height: 100px;
+            margin-top: 8px;
+            opacity: 1;
+        }
+        .flight-task-item.sortable-ghost {
+            background: #334155;
+        }
+
+        .button-glow {
+            background: #5e60ce !important;
+            background-color: #5e60ce !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 15px rgba(94, 96, 206, 0.4) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            opacity: 1 !important;
+        }
+        html.dark .button-glow {
+            background-color: #5e60ce !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 20px rgba(94, 96, 206, 0.6) !important;
+        }
+
+        /* Right Button Stack Layout */
+        .right-button-stack {
+            position: absolute;
+            top: 55%;
+            right: 16px;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+            pointer-events: none;
+        }
+        .right-button-stack > * {
+            pointer-events: auto;
+        }
+
+        /* FLYPER Logo Styles */
+        .flyper-logo {
+            width: 80px; /* Reducido de 120px */
+            height: auto;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .flyper-logo img {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));
+            transition: filter 0.3s ease;
+        }
+
+        html.dark .flyper-logo img {
+            filter: drop-shadow(0px 0px 12px rgba(56,189,248,0.25));
+        }
+
+        .logo-blue {
+            filter: invert(31%) sepia(94%) saturate(1125%) hue-rotate(174deg) brightness(92%) contrast(101%);
+        }
+        
+        html.dark .logo-blue {
+            filter: invert(72%) sepia(54%) saturate(4244%) hue-rotate(171deg) brightness(101%) contrast(98%);
+        }
+
+        .flyper-logo:hover {
+            transform: scale(1.03);
+        }
+
+        /* Decorative Elements */
+        .decorative-bg-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .decorative-circle {
+            position: absolute;
+            width: 80vh; /* Aumentado para que sea dominante */
+            height: 80vh;
+            max-width: 90vw;
+            max-height: 90vw;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(0, 119, 182, 0.05));
+            backdrop-filter: blur(80px);
+            -webkit-backdrop-filter: blur(80px);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 100px rgba(14, 165, 233, 0.1);
+        }
+
+        /* Noise effect */
+        .decorative-circle::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            border-radius: 50%;
+        }
+
+        html.dark .decorative-circle {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(0, 119, 182, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Responsive sizing */
+        @media (max-width: 768px) {
+            .flyper-logo {
+                width: 70px;
+            }
+            .decorative-circle {
+                width: 400px;
+                height: 400px;
+            }
+            .flyper-logo-map {
+                width: 45px;
+            }
+            .task-overlay-list, .active-task-menu {
+                width: calc(100vw - 32px) !important;
+                max-width: 320px;
+            }
+            .hud-panel {
+                padding: 12px !important;
+            }
+            #hud-timer {
+                font-size: 1.25rem !important; /* Más pequeño en móvil */
+            }
+            /* Unificar HUD en móvil */
+            .max-w-3xl.mx-auto.flex.flex-wrap {
+                flex-wrap: nowrap !important;
+                gap: 4px !important;
+                justify-content: space-between !important;
+                width: 95% !important;
+            }
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel {
+                min-width: 0 !important;
+                padding: 6px 8px !important;
+                flex: 1 !important;
+            }
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel .text-\[10px\] {
+                font-size: 8px !important;
+            }
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel .text-xl,
+            .max-w-3xl.mx-auto.flex.flex-wrap .hud-panel .text-2xl {
+                font-size: 14px !important;
+            }
+            #hud-timer {
+                font-size: 14px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .flyper-logo {
+                width: 60px;
+            }
+            .decorative-circle {
+                width: 300px;
+                height: 300px;
+            }
+            .flyper-logo-map {
+                width: 40px;
+            }
+            .boucher-peek {
+                width: 90%;
+                bottom: -170px;
+            }
+            .boucher-peek:hover {
+                bottom: -5px;
+            }
+            .music-menu {
+                width: calc(100vw - 32px);
+                right: 0;
+            }
+            .glass-panel {
+                padding: 1.5rem !important;
+            }
+            #screen-todo .glass-panel {
+                height: 90vh;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .max-w-2xl.mx-auto.grid.grid-cols-3 {
+                grid-template-cols: 1fr 40px 1fr !important;
+                gap: 2px !important;
+            }
+            .hud-panel {
+                padding: 8px !important;
+            }
+            .hud-panel div.text-lg {
+                font-size: 1rem !important;
+            }
+            .boucher-peek {
+                width: 95%;
+            }
+        }
+
+        /* Prevent text selection for better app feel on mobile */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        input, select, textarea {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
+        }
+
+        /* Boucher Peek Effect Styles */
+        .boucher-peek {
+            position: absolute;
+            bottom: -160px; /* Mostrando solo la parte superior (mango) */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: 210px;
+            z-index: 150;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: auto;
+        }
+        .boucher-peek:hover {
+            bottom: -5px;
+        }
+        .boucher-content {
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(224, 242, 254, 0.9));
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        html.dark .boucher-content {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .boucher-handle-line {
+            width: 40px;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            margin: 0 auto 10px;
+        }
+        html.dark .boucher-handle-line {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #btn-active-task-toggle {
+            pointer-events: auto !important;
+            z-index: 1000 !important;
+        }
+
+        /* Estado de Tiempo Agotado */
+        .task-overtime {
+            background: #c1121f !important;
+            border-color: #780001 !important;
+            color: white !important;
+        }
+        .task-overtime div, .task-overtime span {
+            color: white !important;
+        }
+        .task-overtime .bg-gray-200 {
+            background: rgba(255,255,255,0.2) !important;
+        }
+        .task-overtime #active-task-bar {
+            background: white !important;
+        }
+
+        /* Animación para el botón siguiente */
+        .btn-next-task {
+            background: white;
+            color: #c1121f;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 12px;
+            margin-top: 12px;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        .task-overtime .btn-next-task {
+            display: block;
+            animation: pulse-white 2s infinite;
+        }
+        @keyframes pulse-white {
+            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
+
+    <!-- AUDIO ELEMENTS -->
+    <audio id="audio-player" loop crossorigin="anonymous"></audio>
+    <audio id="sfx-success" src="src/sounds/copano.mp3" preload="auto"></audio>
+    <audio id="sfx-overtime" src="src/sounds/ringring.mp3" preload="auto"></audio>
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="relative w-full h-full">
+
+        <!-- PANTALLA 1: PLANIFICADOR (VUELO) -->
+        <div id="screen-planner" class="active-screen flex flex-col items-center justify-center p-4 h-full bg-gray-100 dark:bg-gray-950 transition-colors duration-300 overflow-hidden">
+            
+            <!-- DECORACIÓN DE FONDO -->
+            <div class="decorative-bg-container">
+                <div class="decorative-circle"></div>
+            </div>
+
+            <!-- BOTONES SUPERIORES (DENTRO DEL PLANIFICADOR) -->
+            <div class="absolute top-4 right-4 z-50 flex gap-3">
+                <button onclick="openHangar()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Mis Itinerarios">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span class="text-xs font-bold hidden sm:inline">Mis Vuelos</span>
+                </button>
+                <a href="https://github.com/vicevll/flyper" target="_blank" class="theme-toggle flex items-center justify-center" title="Ver en GitHub">
+                    <i class="fa-brands fa-github text-xl"></i>
+                </a>
+                <button onclick="toggleTheme()" class="theme-toggle" title="Cambiar Tema">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline text-yellow-400"></i>
+                </button>
+            </div>
+
+            <!-- Logo FLYPER -->
+
+            <div class="glass-panel p-8 rounded-3xl shadow-2xl w-full max-w-md relative z-10">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-500/10 dark:bg-blue-400/10 rounded-full mb-4 transition-colors">
+                        <img src="src/FLYPER_LOGO.svg" class="w-10 h-10 object-contain logo-blue" alt="Flyper Logo">
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Plan de Vuelo</h1>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Configura tu sesión de estudio</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Origen -->
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">1. Aeropuerto de Salida</label>
+                        <div class="flex items-center bg-white/50 dark:bg-black/20 border border-white/50 dark:border-white/10 rounded-xl p-1 hover:border-blue-400 transition-colors">
+                            <i class="fa-solid fa-plane-departure text-blue-500/50 dark:text-blue-400/50 ml-3 mr-1 w-5 text-center"></i>
+                            <select id="origin" class="w-full bg-transparent outline-none text-gray-800 dark:text-white font-medium cursor-pointer" onchange="updatePreview()">
+                                <option value="" disabled selected class="dark:bg-gray-800">Seleccionar origen...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Destino -->
+                    <div class="relative">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">2. Aeropuerto de Destino</label>
+                        <div class="flex items-center bg-white/50 dark:bg-black/20 border border-white/50 dark:border-white/10 rounded-xl p-1 hover:border-blue-400 transition-colors">
+                            <i class="fa-solid fa-location-dot text-blue-500/50 dark:text-blue-400/50 ml-3 mr-1 w-5 text-center"></i>
+                            <select id="destination" class="w-full bg-transparent outline-none text-gray-800 dark:text-white font-medium cursor-pointer" onchange="updatePreview()">
+                                <option value="" disabled selected class="dark:bg-gray-800">Seleccionar destino...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Previsualización -->
+                    <div id="preview-box" class="hidden bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 flex justify-between items-center transition-colors">
+                        <div>
+                            <div class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Tiempo de Vuelo</div>
+                            <div class="text-xl font-bold text-blue-900 dark:text-blue-100" id="preview-time">-- min</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-blue-500 dark:text-blue-400">Distancia</div>
+                            <div class="text-sm font-semibold text-blue-800 dark:text-blue-200" id="preview-dist">-- km</div>
+                        </div>
+                    </div>
+
+                    <!-- Botón siguiente -->
+                    <button id="btn-goto-tasks" disabled onclick="showTasksScreen()" class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black dark:hover:bg-blue-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                        Planificar Estudio <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FOOTER DISFRUTA -->
+            <div class="absolute bottom-10 w-full text-center text-gray-400 dark:text-gray-500 text-sm font-medium flex items-center justify-center gap-2 z-10 animate-pulse">
+                <span>Disfruta</span>
+                <i class="fa-solid fa-heart text-blue-500"></i>
+            </div>
+        </div>
+
+        <!-- PANTALLA 1.5: TO-DO LIST (PLAN DE ESTUDIO) -->
+        <div id="screen-todo" class="hidden-screen flex items-center justify-center p-4 h-full bg-transparent">
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl w-full max-w-lg h-[80vh] flex flex-col relative z-10">
+                
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="showScreen('screen-planner')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <i class="fa-solid fa-arrow-left"></i> Volver
+                    </button>
+                    <div class="text-center">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Plan de Estudio</h2>
+                        <span id="todo-total-time" class="text-xs font-mono text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-1 rounded">Total: 0 min</span>
+                    </div>
+                    <div class="w-10"></div> <!-- Spacer -->
+                </div>
+
+                <!-- Session Name Area -->
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 mb-2 px-1">
+                        <i class="fa-solid fa-tag text-blue-500 text-xs"></i>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">Nombre de la Misión</label>
+                    </div>
+                    <input type="text" id="session-name-input" placeholder="Ej: Preparación Examen IA..." 
+                           class="w-full bg-blue-500/5 dark:bg-white/5 border-2 border-dashed border-blue-500/20 dark:border-blue-400/20 rounded-2xl px-5 py-3 text-lg font-bold text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-all text-center">
+                </div>
+
+                <!-- Input Area -->
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="task-input" placeholder="Nueva tarea / Materia..." 
+                           class="flex-1 bg-white/50 dark:bg-black/20 border border-white/50 dark:border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-blue-500 dark:text-white transition-colors"
+                           onkeypress="if(event.key === 'Enter') addTask()">
+                    <button onclick="addTask()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- List Area -->
+                <div class="flex-1 overflow-y-auto pr-1">
+                    <div id="task-list" class="space-y-3 pb-4">
+                        <!-- Las tareas se inyectan aquí -->
+                    </div>
+                    
+                    <div id="empty-tasks" class="text-center py-10 text-gray-400 dark:text-gray-500">
+                        <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
+                        <p class="text-sm">Agrega tareas para organizar tu tiempo de vuelo.</p>
+                    </div>
+                </div>
+
+                <!-- Summary Footer -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                    <div class="flex justify-between items-center mb-4 text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">Total asignado:</span>
+                        <span id="total-percent" class="font-bold text-gray-800 dark:text-white">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4 overflow-hidden">
+                        <div id="total-percent-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    
+                    <button onclick="confirmAndSaveItinerary()" id="btn-generate-ticket" disabled 
+                            class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-black dark:hover:bg-blue-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                        Confirmar y Generar Boucher
+                    </button>
+                    
+                    <button onclick="showBoardingPass()" class="w-full mt-3 text-xs font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        Continuar sin guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 2: BOUCHER / BOARDING PASS -->
+        <div id="screen-ticket" class="hidden-screen flex items-center justify-center bg-black/40 backdrop-blur-md p-4 h-full">
+            <div class="w-full max-w-lg glass-panel !bg-white/90 dark:!bg-gray-800/90 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                <!-- Header -->
+                <div class="pass-header flex justify-between items-center p-6 !bg-blue-600 dark:!bg-blue-500 text-white">
+                    <div class="flex flex-col">
+                        <span class="font-bold tracking-widest uppercase text-[10px] opacity-70">Flyper Pass</span>
+                        <span class="font-black text-lg tracking-tight" id="ticket-session-name">Misión de Estudio</span>
+                    </div>
+                    <i class="fa-solid fa-earth-americas text-2xl opacity-50"></i>
+                </div>
+                
+                <!-- Body -->
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-8">
+                        <div class="text-center">
+                            <div class="text-4xl font-black text-gray-800 dark:text-white" id="ticket-origin">MAD</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mt-1">Salida</div>
+                        </div>
+                        
+                        <div class="flex-1 px-4 flex flex-col items-center">
+                            <i class="fa-solid fa-plane text-xl text-blue-500"></i>
+                            <div class="w-full h-px bg-gray-300 dark:bg-gray-600 my-2 relative">
+                                <div class="absolute w-2 h-2 rounded-full left-0 top-1/2 -translate-y-1/2 bg-blue-500"></div>
+                                <div class="absolute w-2 h-2 rounded-full right-0 top-1/2 -translate-y-1/2 bg-blue-500"></div>
+                            </div>
+                            <div class="text-xs font-bold text-blue-500" id="ticket-duration">2h 15m</div>
+                        </div>
+
+                        <div class="text-center">
+                            <div class="text-4xl font-black text-gray-800 dark:text-white" id="ticket-dest">LDN</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mt-1">Llegada</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/50 dark:bg-black/20 border border-gray-100 dark:border-white/5 p-4 rounded-2xl">
+                            <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Clase</div>
+                            <div class="font-bold text-gray-700 dark:text-gray-200">Business / Focus</div>
+                        </div>
+                        <div class="bg-white/50 dark:bg-black/20 border border-gray-100 dark:border-white/5 p-4 rounded-2xl">
+                            <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Arribo Estimado</div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-700 dark:text-gray-200" id="ticket-arrival">--:--</span>
+                                <span class="text-[10px] text-gray-500" id="ticket-arrival-date">--/--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer / Actions -->
+                <div class="p-6 bg-gray-50/50 dark:bg-black/20 border-t border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <button onclick="showScreen('screen-todo')" class="text-gray-400 font-bold hover:text-gray-600 dark:hover:text-gray-200 text-sm">Editar</button>
+                    <button onclick="startFlight()" class="text-white px-8 py-3 rounded-full font-black shadow-lg hover:scale-105 transition-transform flex items-center bg-blue-600 dark:bg-blue-500">
+                        Despegar <i class="fa-solid fa-plane-departure ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: MAPA Y VUELO -->
+        <div id="screen-flight" class="hidden-screen h-full w-full relative overflow-hidden">
+            <div id="map"></div>
+
+            <!-- STACK DE BOTONES (DERECHA) -->
+            <div class="right-button-stack">
+                
+                <!-- BOTÓN MÚSICA -->
+                <div class="relative">
+                    <button id="btn-music-toggle" onclick="toggleMusicMenu()" class="music-btn" title="Música de Fondo">
+                        <i class="fa-solid fa-music text-lg" id="music-icon"></i>
+                        <div class="h-4 flex items-end ml-1 gap-[2px]" id="music-waves" style="display:none;">
+                            <div class="wave-bar h-3"></div>
+                            <div class="wave-bar h-4"></div>
+                            <div class="wave-bar h-2"></div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- BOTÓN PAUSA -->
+                <div class="relative">
+                    <button onclick="togglePauseMenu()" class="music-btn shadow-lg" title="Descansar">
+                        <i class="fa-solid fa-mug-hot"></i>
+                    </button>
+                </div>
+
+                <!-- BOTÓN LISTA TAREAS -->
+                <div class="relative">
+                    <button onclick="toggleTaskList()" class="music-btn shadow-lg" title="Plan de Vuelo">
+                        <i class="fa-solid fa-list-check"></i>
+                    </button>
+                </div>
+
+                <!-- BOTÓN TAREA ACTUAL -->
+                <button id="btn-active-task-toggle" onclick="toggleActiveTaskMenu()" class="music-btn shadow-lg" title="Tarea Actual">
+                    <i class="fa-solid fa-person-digging"></i>
+                </button>
+
+                <!-- BOTÓN ABORTAR VUELO -->
+                <button onclick="cancelFlight()" class="cancel-btn shadow-lg" title="Abortar Vuelo">
+                    <i class="fa-solid fa-plane-slash"></i>
+                </button>
+
+                <!-- BOTÓN CAMBIAR TEMA -->
+                <button onclick="toggleTheme()" class="theme-toggle shadow-lg" title="Cambiar Tema">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline text-yellow-400"></i>
+                </button>
+            </div>
+
+            <!-- TAREA ACTUAL (POSICIÓN SUPERIOR) -->
+            <div id="active-task-hud" class="active-task-menu glass-panel shadow-2xl">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="text-xs font-bold text-[#0077b6] dark:text-[#38bdf8] uppercase tracking-wider">
+                        <i class="fa-solid fa-play mr-1"></i> Tarea Actual
+                    </div>
+                    <button onclick="toggleActiveTaskMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="text-2xl font-mono font-black text-gray-700 dark:text-gray-200 mb-1" id="active-task-time">--:--</div>
+                <div class="font-bold text-lg text-gray-800 dark:text-white mb-3" id="active-task-title">Nombre de la Tarea</div>
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 bg-gray-200 dark:bg-gray-700 h-3 rounded-full overflow-hidden">
+                        <div id="active-task-bar" class="bg-[#0077b6] dark:bg-[#38bdf8] h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <div id="active-task-pct" class="text-sm font-black text-[#0077b6] dark:text-[#38bdf8] min-w-[40px] text-right">0%</div>
+                </div>
+                <button onclick="completeCurrentTask()" class="btn-next-task">
+                    Siguiente Tarea <i class="fa-solid fa-forward ml-1"></i>
+                </button>
+            </div>
+
+            <!-- MUSIC MENU (REUBICADO) -->
+            <div id="music-menu" class="music-menu task-panel glass-panel">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Atmósfera de Estudio (Radio)</h3>
+                    <button onclick="toggleMusicMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="space-y-1">
+                    <div class="track-item" onclick="playTrack('https://stream.zeno.fm/0r0xa792kwzuv', this)">
+                        <i class="fa-solid fa-radio text-indigo-500"></i> 
+                        <div class="flex flex-col leading-tight">
+                            <span>Lofi Hip Hop Radio</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Beats para estudiar/relajarse</span>
+                        </div>
+                    </div>
+                    <div class="track-item" onclick="playTrack('https://pianosolo.streamguys1.com/live', this)">
+                        <i class="fa-solid fa-wind text-sky-500"></i> 
+                        <div class="flex flex-col leading-tight">
+                            <span>Piano & Ambient</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Melodías suaves en vivo</span>
+                        </div>
+                    </div>
+                    <div class="track-item" onclick="playTrack('src/sounds/Musica_lluvia.mp3', this)">
+                        <i class="fa-solid fa-cloud-rain text-teal-500"></i> 
+                        <div class="flex flex-col leading-tight">
+                            <span>Lluvia Suave</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Ambiente tranquilo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 mb-2 px-2">
+                    <div class="flex justify-between text-[10px] text-gray-400 uppercase font-bold mb-1">
+                        <span>Volumen</span>
+                        <span id="vol-label">50%</span>
+                    </div>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)">
+                </div>
+                
+                <div class="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                    <div class="track-item text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" onclick="stopMusic()">
+                        <i class="fa-solid fa-stop"></i> Detener Radio
+                    </div>
+                </div>
+            </div>
+
+            <!-- FLIGHT TASK LIST (REUBICADO) -->
+                    <div id="flight-task-list" class="task-overlay-list task-panel glass-panel shadow-2xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex flex-col">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-blue-500 opacity-70">Misión</span>
+                                <h3 class="font-bold text-gray-800 dark:text-white text-base leading-tight" id="flight-list-session-name">Plan de Vuelo</h3>
+                            </div>
+                            <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
+                    <div class="flex flex-col gap-2">
+                        <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
+                            class="w-full bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white">
+                        <div class="flex gap-2 items-center">
+                            <div class="flex-1 flex items-center gap-2 bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase">Tiempo:</span>
+                                <input type="number" id="flight-task-percent" value="10" min="1" max="100" 
+                                    class="w-full bg-transparent outline-none text-xs dark:text-white">
+                                <span class="text-xs text-gray-400">%</span>
+                            </div>
+                            <button onclick="addTaskInFlight()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                <i class="fa-solid fa-plus mr-1"></i> Añadir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="flight-tasks-container" class="space-y-2"></div>
+            </div>
+
+            <!-- PAUSE MENU -->
+            <div id="pause-menu" class="music-menu task-panel glass-panel" style="z-index: 1100;">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Tomar un Descanso</h3>
+                    <button onclick="togglePauseMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">El tiempo de vuelo y la tarea actual se detendrán.</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="startPause(5)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">5m</button>
+                    <button onclick="startPause(10)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">10m</button>
+                    <button onclick="startPause(15)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">15m</button>
+                    <button onclick="startPause(20)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">20m</button>
+                    <button onclick="startPause(25)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">25m</button>
+                    <button onclick="startPause(30)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">30m</button>
+                </div>
+            </div>
+
+            <!-- PAUSE OVERLAY -->
+            <div id="pause-overlay" class="hidden absolute inset-0 z-[2000] bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-white">
+                <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                    <i class="fa-solid fa-mug-hot text-4xl"></i>
+                </div>
+                <h2 class="text-3xl font-black mb-2">En Pausa</h2>
+                <div class="text-6xl font-mono font-bold mb-8" id="pause-countdown">00:00</div>
+                <button onclick="resumeFlight()" class="bg-white text-blue-900 font-bold py-3 px-8 rounded-full hover:scale-105 transition transform shadow-xl">
+                    <i class="fa-solid fa-play mr-2"></i> Reanudar Vuelo
+                </button>
+            </div>
+
+            <!-- HUD SUPERIOR (TIEMPO, FINALIZACIÓN, PROGRESO) -->
+            <div class="absolute top-0 left-0 right-0 p-4 z-[90] pointer-events-none">
+                <div class="max-w-3xl mx-auto flex flex-wrap justify-center gap-3 pointer-events-auto">
+                    <!-- Caja 1: Tiempo Restante -->
+                    <div class="hud-panel p-3 px-5 text-center min-w-[140px]">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Tiempo Restante</div>
+                        <div class="text-2xl font-mono font-bold text-gray-800 dark:text-white" id="hud-timer">00:00:00</div>
+                    </div>
+                    
+                    <!-- Caja 2: Finalización -->
+                    <div class="hud-panel p-3 px-5 text-center min-w-[140px]">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Finalización</div>
+                        <div class="text-xl font-mono font-bold text-gray-800 dark:text-white leading-none" id="hud-arrival">--:--</div>
+                        <div class="text-[10px] text-gray-400 font-mono mt-1" id="hud-arrival-date">--/--/--</div>
+                    </div>
+                    
+                    <!-- Caja 3: Progreso -->
+                    <div class="hud-panel p-3 px-5 text-center min-w-[120px] flex flex-col justify-center">
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Progreso</div>
+                        <div class="text-2xl font-bold text-[#0077b6] dark:text-[#38bdf8]" id="hud-pct">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HUD INFERIOR (TELEMTRÍA) -->
+            <div class="absolute bottom-8 left-0 right-0 px-4 z-[100] pointer-events-none">
+                <div class="max-w-2xl mx-auto grid grid-cols-3 gap-4 pointer-events-auto">
+                    <div class="hud-panel p-3 text-center">
+                        <i class="fa-solid fa-gauge text-gray-400 mb-1"></i>
+                        <div class="text-lg font-bold text-gray-800 dark:text-white" id="hud-speed">0</div>
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">km/h</div>
+                    </div>
+                    <!-- Espacio central para el boucher -->
+                    <div class="flex items-center justify-center">
+                        <div class="text-gray-400 opacity-20">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </div>
+                    </div>
+                    <div class="hud-panel p-3 text-center">
+                        <i class="fa-solid fa-route text-gray-400 mb-1"></i>
+                        <div class="text-lg font-bold text-gray-800 dark:text-white" id="hud-dist">0</div>
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">km Recorridos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOUCHER ASOMÁNDOSE (INFERIOR CENTRO) -->
+            <div id="flight-boucher" class="boucher-peek">
+                <div class="boucher-content">
+                    <!-- Handle / Parte visible -->
+                    <div class="boucher-handle-line"></div>
+                    <div class="flex flex-col items-center justify-center mb-4 border-b border-dashed border-gray-200 dark:border-gray-700 pb-3 cursor-pointer">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-ticket text-[#0077b6] dark:text-[#38bdf8]"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Boarding Pass</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenido del Boucher -->
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-gray-800 dark:text-white" id="boucher-origin">---</div>
+                            <div class="text-[10px] text-gray-500 uppercase font-bold">Origen</div>
+                        </div>
+                        <div class="flex-1 px-4 flex flex-col items-center">
+                            <i class="fa-solid fa-plane text-sm text-[#0077b6] dark:text-[#38bdf8]"></i>
+                            <div class="w-full h-px bg-gray-300 dark:bg-gray-600 my-1 relative">
+                                <div class="absolute w-1 h-1 rounded-full left-0 top-1/2 -translate-y-1/2 bg-gray-300 dark:bg-gray-600"></div>
+                                <div class="absolute w-1 h-1 rounded-full right-0 top-1/2 -translate-y-1/2 bg-gray-300 dark:bg-gray-600"></div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-black text-gray-800 dark:text-white" id="boucher-dest">---</div>
+                            <div class="text-[10px] text-gray-500 uppercase font-bold">Destino</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-center border border-gray-100 dark:border-gray-700">
+                            <div class="text-[8px] text-gray-400 uppercase font-bold">Vuelo</div>
+                            <div class="text-xs font-bold text-gray-700 dark:text-gray-200" id="boucher-duration">--:--</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-center border border-gray-100 dark:border-gray-700">
+                            <div class="text-[8px] text-gray-400 uppercase font-bold">Arribo</div>
+                            <div class="text-xs font-bold text-gray-700 dark:text-gray-200" id="boucher-arrival">--:--</div>
+                            <div class="text-[8px] text-gray-500" id="boucher-arrival-date">--/--</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-center border border-gray-100 dark:border-gray-700">
+                            <div class="text-[8px] text-gray-400 uppercase font-bold">Asiento</div>
+                            <div class="text-xs font-bold text-gray-700 dark:text-gray-200">12A</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FLYPER LOGO (BOTTOM-LEFT) -->
+            <div class="absolute bottom-5 left-5 z-[95] pointer-events-none">
+                <div class="flyper-logo-map">
+                    <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+Cjxzdmcgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDE2NjcgMTg5NSIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxuczpzZXJpZj0iaHR0cDovL3d3dy5zZXJpZi5jb20vIiBzdHlsZT0iZmlsbC1ydWxlOmV2ZW5vZGQ7Y2xpcC1ydWxlOmV2ZW5vZGQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjI7Ij4KICAgIDxnIHRyYW5zZm9ybT0ibWF0cml4KDEsMCwwLDEsLTE2Ni42NTY2MjQsLTE3LjYzMTM0OSkiPgogICAgICAgIDxnIHRyYW5zZm9ybT0ibWF0cml4KDYuNDI2NTgyLDAsMCw2LjQyNjU4MiwtMTM0Ljg1NDMwMSwtMjQwLjg5MTY4OCkiPgogICAgICAgICAgICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLjMwOTUsMCwwLDEuMzA5NSwtNDg2LjAxNTc4MSwtMTE0OC4wNjc3ODgpIj4KICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik00NzIuMDc1LDk5OS4wNDdDNDY3LjE5LDk5OC43MDEgNDYzLDk5Ny45ODggNDU5LjQyOSw5OTcuMDA2QzQ0OC41NjUsOTk0LjAyMSA0NDEuOTc2LDk4OC41MjcgNDM4LjAxMSw5ODIuNDA0QzQzMC44NjcsOTcxLjM3MyA0MzIuMTYzLDk1Ni41OSA0MzguMzM2LDk0NC4wOTNDNDQ0LjMwNiw5MzIuMDA3IDQ1NC42MjksOTIzLjA5IDQ2MC44NzYsOTIxLjEwOEM0NzIuMTg1LDkxNy41MiA0ODEuMDc1LDkxOC44MzIgNDg3Ljg4NCw5MjIuNTc1QzQ5Ny4yNDYsOTI3LjcyMiA1MDMuODQ1LDkzOC43OTEgNTA1LjM0OCw5NTQuOTI4QzUwNS43MTMsOTU4Ljg1OCA1MDUuNzkxLDk2My4xNTggNTA1LjYsOTY3Ljc1QzUwNi41MzYsOTY3LjU2NSA1MDcuNDg2LDk2Ny4zNzIgNTA4LjQ1Miw5NjcuMTdDNTQwLjk4Myw5NjAuMzYzIDU1MS44NDEsOTQxLjE5NiA1NTguNDAyLDkzMi4wMjlMNTY2LjcsOTIwLjQzNEw1ODkuODkxLDkzNy4wMzJMNTgxLjU5Miw5NDguNjI3QzU3Mi44MDcsOTYwLjkwMiA1NTcuODUzLDk4NS45NjkgNTE0LjI5Miw5OTUuMDg0QzUwOS44MDksOTk2LjAyMiA1MDUuNTc5LDk5Ni43ODYgNTAxLjU5LDk5Ny4zOTNDNDk4LjY0NCwxMDExLjI5NiA0OTQuMjI0LDEwMjYuMTM5IDQ4OC42ODMsMTA0MC42NUM0NzYuNzUxLDEwNzEuOTAzIDQ1OS42NzQsMTEwMS40OTkgNDQyLjQyNCwxMTE3LjI4Mkw0MzEuOTA0LDExMjYuOTA4TDQxMi42NTMsMTEwNS44NjhMNDIzLjE3MywxMDk2LjI0MkM0NDMuNzEzLDEwNzcuNDQ4IDQ2My4xMiwxMDM1LjQ1OSA0NzIuMDc1LDk5OS4wNDdaTTQ3Ni45MDcsOTcwLjc4NUM0NzcuNTM1LDk2My4wMjIgNDc3LjM0NSw5NTYuMjMzIDQ3NS43NzQsOTUxLjAzMUM0NzUuMzQsOTQ5LjU5NSA0NzQuOTk1LDk0OC4yOTEgNDc0LjA5LDk0Ny41MzFDNDczLjgwNCw5NDcuMjkxIDQ3My4zOSw5NDcuNTEzIDQ3Mi45MjksOTQ3LjU0OUM0NzIuMTM5LDk0Ny42MTIgNDcxLjMwMiw5NDcuNzc3IDQ3MC40MTEsOTQ4LjAyMUM0NjkuNTQ5LDk0OC45NTEgNDY1LjU5LDk1My4zMTIgNDYzLjkwNSw5NTYuNzI0QzQ2Mi4yNzMsOTYwLjAyOCA0NjAuMzE5LDk2My43MTkgNDYxLjg2Niw5NjYuNzU5QzQ2Mi41MDksOTY4LjAyNSA0NjQuMDY3LDk2OC41OTQgNDY2LjEwNCw5NjkuMjQ2QzQ2OC45ODgsOTcwLjE2OCA0NzIuNTU5LDk3MC42NjcgNDc2LjkwNyw5NzAuNzg1WiIgc3R5bGU9ImZpbGw6cmdiKDAsMTE5LDE4Mik7Ii8+CiAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMDk1LDAsMCwxLjMwOTUsLTQ4Ni4wMTU3ODEsLTExNDguMDY3Nzg4KSI+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNDgyLjgyNCwxMDUzLjc0NEw0NjguNjkxLDEwNTUuNjM0TDQ2NC45MSwxMDI3LjM2OEw0NzkuMDQzLDEwMjUuNDc3QzQ4Mi42MjgsMTAyNC45OTcgNDg3LjUxOSwxMDI1LjM0OCA0OTMuNTE0LDEwMjUuOTc0QzUwOS4zMjUsMTAyNy42MjcgNTM2LjYzOSwxMDI5LjQyNiA1NjguMTY4LDk5MC45NjFMNTc3LjIwNyw5NzkuOTMzTDU5OS4yNjMsOTk4LjAxMUw1OTAuMjI0LDEwMDkuMDM5QzU1My40NTgsMTA1My44OTMgNTIwLjM4LDEwNTYuNDE1IDQ5OC42NjEsMTA1NS4wNTFDNDkxLjczOSwxMDU0LjYxNiA0ODYuMzM4LDEwNTMuMjczIDQ4Mi44MjQsMTA1My43NDRaIiBzdHlsZT0iZmlsbDpyZ2IoMCwxMTksMTgyKTsiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+Cg==" alt="FLYPER Logo" loading="lazy">
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL RESUMEN (OCULTO) -->
+        <div id="summary-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all scale-100 border border-gray-200 dark:border-gray-700">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
+                    <i class="fa-solid fa-plane-arrival text-2xl"></i>
+                </div>
+                <h2 id="summary-title" class="text-2xl font-black text-gray-800 dark:text-white mb-2">¡Vuelo Completado!</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Resumen de tu sesión de estudio</p>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                        <div class="text-xs text-gray-400 uppercase">Tiempo</div>
+                        <div class="font-mono font-bold text-gray-800 dark:text-white text-lg" id="summary-time">00:00</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                        <div class="text-xs text-gray-400 uppercase">Distancia</div>
+                        <div class="font-bold text-gray-800 dark:text-white text-lg" id="summary-dist">0 km</div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl mb-6 text-left">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="text-xs text-blue-500 dark:text-blue-400 uppercase font-bold">Tareas Completadas</div>
+                        <span class="text-xs font-bold text-blue-700 dark:text-blue-300" id="summary-task-count">0/0</span>
+                    </div>
+                    <div class="flex items-center gap-2 w-full">
+                        <div class="flex-1 bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden w-full">
+                            <div id="summary-task-bar" class="bg-blue-500 h-full w-0 transition-all duration-500"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="resetApp()" class="w-full bg-blue-600 dark:bg-blue-500 text-white font-black py-4 rounded-2xl shadow-xl hover:scale-[1.03] active:scale-95 transition-all text-lg">
+                    Planificar Nuevo Vuelo
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL CONFIRMACIÓN CANCELAR (NUEVO) -->
+        <div id="confirm-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-gray-200 dark:border-gray-700">
+                <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-600 dark:text-yellow-400">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">¿Abortar Vuelo?</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">El progreso actual se guardará hasta este punto, pero no llegarás a tu destino.</p>
+                
+                <div class="flex gap-3">
+                    <button onclick="closeConfirmModal()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        Continuar
+                    </button>
+                    <button onclick="executeCancellation()" class="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">
+                        Terminar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL TAREAS COMPLETADAS (NUEVO) -->
+        <div id="tasks-done-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-gray-200 dark:border-gray-700">
+                <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600 dark:text-green-400">
+                    <i class="fa-solid fa-check-double text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-2">¡Tareas Finalizadas!</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Has completado todas tus tareas. ¿Deseas terminar el vuelo ahora y ver tu resumen?</p>
+                
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('tasks-done-modal').classList.add('hidden')" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                        Seguir Volando
+                    </button>
+                    <button onclick="executeCancellation()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">
+                        Terminar Vuelo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL ERROR / ADVERTENCIA (NUEVO) -->
+        <div id="error-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-gray-200 dark:border-gray-700">
+                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600 dark:text-red-400">
+                    <i class="fa-solid fa-circle-exclamation text-2xl"></i>
+                </div>
+                <h2 id="error-modal-title" class="text-xl font-bold text-gray-800 dark:text-white mb-2">¡Límite Excedido!</h2>
+                <p id="error-modal-msg" class="text-sm text-gray-500 dark:text-gray-400 mb-6">El tiempo total asignado no puede superar el 100%.</p>
+                
+                <button onclick="closeErrorModal()" class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
+                    Entendido
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL HANGAR (ITINERARIOS GUARDADOS) -->
+        <div id="hangar-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-black text-gray-800 dark:text-white">Mi Hangar</h2>
+                        <p class="text-xs text-gray-500">Tus itinerarios guardados localmente</p>
+                    </div>
+                    <button onclick="closeHangar()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div id="hangar-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50 dark:bg-gray-900/20">
+                    <!-- Los itinerarios se inyectan aquí -->
+                </div>
+
+                <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Flyper hangar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL ÉXITO FINAL (NUEVO) -->
+        <div id="success-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center border border-gray-200 dark:border-gray-700">
+                <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 dark:text-green-400">
+                    <i class="fa-solid fa-trophy text-4xl"></i>
+                </div>
+                <h2 class="text-3xl font-black text-gray-800 dark:text-white mb-2">¡Felicidades!</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-8">Has completado todas tus misiones con éxito. ¡Vuelo impecable!</p>
+                
+                <div class="flex flex-col gap-3">
+                    <button onclick="resetApp()" class="w-full bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-black py-4 rounded-2xl shadow-lg transform transition hover:scale-[1.02]">
+                        Siguiente Vuelo
+                    </button>
+                    <button onclick="showFinalSummary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg transform transition hover:scale-[1.02]">
+                        Ver Resumen
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="src/airports.js"></script>
+    <script>
+        // --- UTILS ---
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        }
+
+        // --- THEME & MAP LOGIC ---
+        let isDarkMode = false;
+        let map = null, tileLayer = null, labelLayer = null;
+        let flightPolyline = null, planeMarker = null, timerInterval = null;
+        let lastSaveTime = 0;
+
+        let trip = {
+            origin: null,
+            dest: null,
+            distance: 0,
+            durationMs: 0,
+            startTime: 0,
+            sessionName: '',
+            tasks: [] // Array de objetos {id, title, percent, completed}
+        };
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            isDarkMode = !isDarkMode;
+            html.classList.toggle('dark', isDarkMode);
+            if (map) updateMapTiles();
+        }
+
+        function updateMapTiles() {
+            if (!map) return;
+            if (tileLayer) map.removeLayer(tileLayer);
+            if (labelLayer) map.removeLayer(labelLayer);
+
+            const url = isDarkMode 
+                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
+            
+            const tileOptions = { 
+                maxZoom: 18, 
+                subdomains: 'abcd',
+                noWrap: true,
+                bounds: [[-90, -180], [90, 180]]
+            };
+
+            tileLayer = L.tileLayer(url, tileOptions).addTo(map);
+            if (!isDarkMode) {
+                labelLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', tileOptions).addTo(map);
+            }
+        }
+
+        // --- DATA ---
+        // Los aeropuertos se cargan desde src/airports.js
+
+        // --- TASK LOGIC ---
+        function showTasksScreen() {
+            renderTasks();
+            showScreen('screen-todo');
+        }
+
+        function addTask() {
+            const input = document.getElementById('task-input');
+            const title = input.value.trim();
+            if (!title) return;
+
+            // Calcular porcentaje restante para asignar automáticamente
+            const currentTotal = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
+            const remaining = Math.max(0, 100 - currentTotal);
+            const newPercent = remaining > 0 ? (remaining > 20 ? 20 : remaining) : 0;
+
+            const newTask = {
+                id: Date.now().toString(),
+                title: title,
+                percent: newPercent,
+                completed: false
+            };
+            trip.tasks.push(newTask);
+            input.value = '';
+            renderTasks();
+        }
+
+        function removeTask(id) {
+            trip.tasks = trip.tasks.filter(t => t.id !== id);
+            renderTasks();
+        }
+
+        function showError(title, msg) {
+            document.getElementById('error-modal-title').innerText = title;
+            document.getElementById('error-modal-msg').innerText = msg;
+            document.getElementById('error-modal').classList.remove('hidden');
+        }
+
+        function closeErrorModal() {
+            document.getElementById('error-modal').classList.add('hidden');
+        }
+
+        function updateTaskPercent(id, newPercent) {
+            const task = trip.tasks.find(t => t.id === id);
+            if (task) {
+                const val = parseInt(newPercent) || 0;
+                
+                // Calcular total si aplicamos este cambio
+                const otherTasksTotal = trip.tasks.filter(t => t.id !== id).reduce((sum, t) => sum + t.percent, 0);
+                
+                if (otherTasksTotal + val > 100) {
+                    showError("Límite de Tiempo", "El tiempo total de las tareas no puede superar el 100% del vuelo. Ajusta otras tareas primero.");
+                    
+                    // Re-renderizar para resetear el valor del input al valor anterior guardado en el objeto
+                    if (document.getElementById('screen-todo').classList.contains('active-screen')) {
+                        renderTasks();
+                    } else {
+                        renderFlightTasks();
+                    }
+                    return;
+                }
+
+                task.percent = val;
+                // Update appropriate UI list based on screen
+                if (document.getElementById('screen-todo').classList.contains('active-screen')) {
+                    renderTasks();
+                } else if (document.getElementById('screen-flight').classList.contains('active-screen')) {
+                    renderFlightTasks();
+                }
+            }
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('task-list');
+            const empty = document.getElementById('empty-tasks');
+            
+            list.innerHTML = '';
+            
+            if (trip.tasks.length === 0) {
+                empty.style.display = 'block';
+                document.getElementById('btn-generate-ticket').disabled = true;
+            } else {
+                empty.style.display = 'none';
+                document.getElementById('btn-generate-ticket').disabled = false;
+            }
+
+            // Calcular minutos totales del vuelo para mostrar referencia
+            const totalMinutes = Math.round(trip.durationMs / 60000);
+            document.getElementById('todo-total-time').innerText = `Vuelo: ${totalMinutes} min`;
+
+            let totalPercent = 0;
+
+            trip.tasks.forEach(task => {
+                totalPercent += task.percent;
+                const taskMin = Math.round((task.percent / 100) * totalMinutes);
+
+                const el = document.createElement('div');
+                el.className = 'task-card bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 p-3 rounded-xl shadow-sm flex items-center gap-3 select-none';
+                el.dataset.id = task.id;
+                
+                el.innerHTML = `
+                    <div class="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 handle">
+                        <i class="fa-solid fa-grip-vertical"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-800 dark:text-white text-sm">${escapeHTML(task.title)}</div>
+                        <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">${taskMin} min</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="number" min="0" max="100" value="${task.percent}" 
+                            class="w-16 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded px-2 py-1 text-xs text-center focus:outline-none focus:border-blue-500 dark:text-white"
+                            onchange="updateTaskPercent('${task.id}', this.value)">
+                        <span class="text-xs text-gray-500">%</span>
+                        <button onclick="removeTask('${task.id}')" class="text-red-400 hover:text-red-600 ml-2">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(el);
+            });
+
+            // Update footer stats
+            document.getElementById('total-percent').innerText = totalPercent + '%';
+            document.getElementById('total-percent-bar').style.width = Math.min(100, totalPercent) + '%';
+            
+            if (totalPercent > 100) {
+                document.getElementById('total-percent').classList.add('text-red-500');
+                document.getElementById('total-percent-bar').classList.add('bg-red-500');
+                document.getElementById('total-percent-bar').classList.remove('bg-blue-500');
+            } else {
+                document.getElementById('total-percent').classList.remove('text-red-500');
+                document.getElementById('total-percent-bar').classList.remove('bg-red-500');
+                document.getElementById('total-percent-bar').classList.add('bg-blue-500');
+            }
+        }
+
+        // Initialize Sortable
+        document.addEventListener('DOMContentLoaded', () => {
+            const list = document.getElementById('task-list');
+            new Sortable(list, {
+                handle: '.handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: function (evt) {
+                    // Reorder array based on DOM
+                    const newOrder = [];
+                    list.querySelectorAll('.task-card').forEach(card => {
+                        const id = card.dataset.id;
+                        const task = trip.tasks.find(t => t.id === id);
+                        if(task) newOrder.push(task);
+                    });
+                    trip.tasks = newOrder;
+                }
+            });
+
+            // Initialize Sortable for flight task list
+            const flightList = document.getElementById('flight-tasks-container');
+            new Sortable(flightList, {
+                handle: '.flight-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: function (evt) {
+                    const newOrder = [];
+                    flightList.querySelectorAll('.flight-task-item').forEach(item => {
+                        const id = item.dataset.id;
+                        const task = trip.tasks.find(t => t.id === id);
+                        if(task) newOrder.push(task);
+                    });
+                    trip.tasks = newOrder;
+                    // Order affects updateActiveTaskHUD
+                }
+            });
+        });
+
+        // --- FLIGHT TASK PANEL LOGIC ---
+        function toggleTaskList() {
+            const menu = document.getElementById('flight-task-list');
+            const musicMenu = document.getElementById('music-menu');
+            const activeHUD = document.getElementById('active-task-hud');
+            const isDesktop = window.innerWidth >= 1024;
+            
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (musicMenu) musicMenu.classList.remove('open');
+                if (activeHUD) activeHUD.classList.remove('open');
+            }
+
+            if (menu) menu.classList.toggle('open');
+            renderFlightTasks();
+        }
+
+        function toggleActiveTaskMenu() {
+            const menu = document.getElementById('active-task-hud');
+            const taskList = document.getElementById('flight-task-list');
+            const musicMenu = document.getElementById('music-menu');
+            const btn = document.getElementById('btn-active-task-toggle');
+            const isDesktop = window.innerWidth >= 1024;
+
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (taskList) taskList.classList.remove('open');
+                if (musicMenu) musicMenu.classList.remove('open');
+            }
+
+            if (menu) menu.classList.toggle('open');
+        }
+
+        function renderFlightTasks() {
+            const container = document.getElementById('flight-tasks-container');
+            container.innerHTML = '';
+
+            trip.tasks.forEach(task => {
+                const el = document.createElement('div');
+                el.className = `flight-task-item p-3 rounded-lg border text-sm ${
+                    task.completed 
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
+                }`;
+                el.dataset.id = task.id;
+                
+                el.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="flight-handle cursor-grab text-gray-400 hover:text-gray-600">
+                                <i class="fa-solid fa-grip-vertical"></i>
+                            </div>
+                            <button onclick="toggleTaskComplete('${task.id}')" class="text-lg ${task.completed ? 'text-green-500' : 'text-gray-300 hover:text-gray-500'}">
+                                <i class="fa-${task.completed ? 'solid' : 'regular'} fa-circle-check"></i>
+                            </button>
+                            <span class="${task.completed ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200 font-medium'}">
+                                ${escapeHTML(task.title)}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-mono text-gray-500">${task.percent}%</span>
+                            <button onclick="toggleTaskEditMenu('${task.id}')" class="text-gray-400 hover:text-blue-500 p-1">
+                                <i class="fa-solid fa-chevron-down transition-transform duration-300" id="chevron-${task.id}"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="edit-menu-${task.id}" class="flight-task-edit-menu border-t border-gray-100 dark:border-gray-700 pt-2">
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-2 flex-1">
+                                <span class="text-[10px] text-gray-400 uppercase font-bold">Tiempo:</span>
+                                <input type="number" min="0" max="100" value="${task.percent}" 
+                                    class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-xs"
+                                    onchange="updateTaskPercent('${task.id}', this.value); renderFlightTasks();">
+                            </div>
+                            <button onclick="deleteTaskInFlight('${task.id}')" class="text-red-400 hover:text-red-600 text-xs flex items-center gap-1">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+
+            checkTasksStatus();
+        }
+
+        function addTaskInFlight() {
+            const input = document.getElementById('flight-task-input');
+            const pctInput = document.getElementById('flight-task-percent');
+            const title = input.value.trim();
+            const pct = parseInt(pctInput.value) || 0;
+
+            if (!title) return;
+
+            // Validar límite de 100%
+            const currentTotal = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
+            if (currentTotal + pct > 100) {
+                showError("Límite de Tiempo", "No puedes añadir esta tarea porque superaría el 100% del tiempo de vuelo.");
+                return;
+            }
+
+            const newTask = {
+                id: Date.now().toString(),
+                title: title,
+                percent: pct,
+                completed: false
+            };
+            trip.tasks.push(newTask);
+            input.value = '';
+            renderFlightTasks();
+        }
+
+        function showFinalSummary() {
+            document.getElementById('success-modal').classList.add('hidden');
+            executeCancellation();
+        }
+
+        function checkTasksStatus() {
+            if (trip.tasks.length > 0 && trip.tasks.every(t => t.completed)) {
+                // BIG CELEBRATION
+                const duration = 5 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 400 };
+
+                const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+                const interval = setInterval(function() {
+                    const timeLeft = animationEnd - Date.now();
+
+                    if (timeLeft <= 0) {
+                        return clearInterval(interval);
+                    }
+
+                    const particleCount = 50 * (timeLeft / duration);
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+                }, 250);
+
+                // Play success sound
+                const sfx = document.getElementById('sfx-success');
+                if (sfx) {
+                    sfx.currentTime = 0;
+                    sfx.play().catch(e => console.log("Audio block"));
+                }
+
+                setTimeout(() => {
+                    document.getElementById('success-modal').classList.remove('hidden');
+                }, 1000);
+            }
+        }
+
+        function toggleTaskEditMenu(id) {
+            const menu = document.getElementById(`edit-menu-${id}`);
+            const chevron = document.getElementById(`chevron-${id}`);
+            if (menu) {
+                const isOpen = menu.classList.toggle('open');
+                if (chevron) {
+                    chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            }
+        }
+
+        function deleteTaskInFlight(id) {
+            trip.tasks = trip.tasks.filter(t => t.id !== id);
+            renderFlightTasks();
+        }
+
+        function toggleTaskComplete(id) {
+            const task = trip.tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                
+                if (task.completed) {
+                    // Trigger Confetti
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        zIndex: 200
+                    });
+
+                    // Play Success SFX
+                    const sfx = document.getElementById('sfx-success');
+                    if (sfx) {
+                        sfx.currentTime = 0;
+                        sfx.play().catch(e => console.log("Audio play blocked"));
+                    }
+                }
+
+                renderFlightTasks();
+            }
+        }
+
+
+        // --- INIT & CORE LOGIC ---
+        window.onload = () => { 
+            loadSelects(); 
+            if (restoreFlightState()) {
+                showScreen('screen-flight');
+                initMap();
+            }
+        };
+
+        let tomSelectOrigin, tomSelectDest;
+
+        function loadSelects() {
+            const s1 = document.getElementById('origin');
+            const s2 = document.getElementById('destination');
+            
+            // Ordenar: Primero por País, luego por Ciudad
+            const sorted = [...airports].sort((a,b) => {
+                if (a.country < b.country) return -1;
+                if (a.country > b.country) return 1;
+                return a.city.localeCompare(b.city);
+            });
+
+            // Agrupar por país
+            const groups = {};
+            sorted.forEach(ap => {
+                if (!groups[ap.country]) groups[ap.country] = [];
+                groups[ap.country].push(ap);
+            });
+
+            const buildOptions = () => {
+                let html = '<option value="" disabled selected>Buscar aeropuerto...</option>';
+                for (const [country, list] of Object.entries(groups)) {
+                    html += `<optgroup label="${country}">`;
+                    list.forEach(ap => {
+                        html += `<option value="${ap.code}">${ap.city} (${ap.code}) - ${ap.country}</option>`;
+                    });
+                    html += `</optgroup>`;
+                }
+                return html;
+            };
+
+            const optionsHTML = buildOptions();
+            s1.innerHTML = optionsHTML;
+            s2.innerHTML = optionsHTML;
+
+            // Inicializar Tom Select
+            const tsConfig = {
+                create: false,
+                sortField: { field: "text", direction: "asc" },
+                placeholder: "Escribe para buscar...",
+                render: {
+                    option: function(data, escape) {
+                        const parts = data.text.split(' - ');
+                        return '<div>' +
+                                '<span class="font-bold block">' + escape(parts[0]) + '</span>' +
+                                '<span class="text-xs text-gray-500 block">' + escape(parts[1] || '') + '</span>' +
+                            '</div>';
+                    },
+                    item: function(data, escape) {
+                        return '<div>' + escape(data.text) + '</div>';
+                    }
+                },
+                onChange: function() {
+                    updatePreview();
+                }
+            };
+
+            tomSelectOrigin = new TomSelect('#origin', tsConfig);
+            tomSelectDest = new TomSelect('#destination', tsConfig);
+        }
+
+        function getAirport(code) { return airports.find(a => a.code === code); }
+
+        function calculateDist(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function formatTime(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return h > 0 ? `${h}h ${m}m` : `${m} min`;
+        }
+
+        function updatePreview() {
+            const oVal = document.getElementById('origin').value;
+            const dVal = document.getElementById('destination').value;
+            const btn = document.getElementById('btn-goto-tasks');
+            const box = document.getElementById('preview-box');
+
+            if (oVal && dVal && oVal !== dVal) {
+                const origin = getAirport(oVal);
+                const dest = getAirport(dVal);
+                const dist = calculateDist(origin.lat, origin.lon, dest.lat, dest.lon);
+                const timeHrs = dist / 850; 
+                const totalMins = Math.round(timeHrs * 60) + 15;
+
+                trip.origin = origin;
+                trip.dest = dest;
+                trip.distance = dist;
+                trip.durationMs = totalMins * 60 * 1000;
+
+                document.getElementById('preview-time').innerText = formatTime(totalMins);
+                document.getElementById('preview-dist').innerText = Math.round(dist) + " km";
+                box.classList.remove('hidden');
+                btn.disabled = false;
+            } else {
+                box.classList.add('hidden');
+                btn.disabled = true;
+            }
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.active-screen').forEach(el => {
+                el.classList.remove('active-screen');
+                el.classList.add('hidden-screen');
+            });
+            const target = document.getElementById(id);
+            target.classList.remove('hidden-screen');
+            target.classList.add('active-screen');
+        }
+
+        function showBoardingPass() {
+            // Capture session name
+            const sessionInput = document.getElementById('session-name-input');
+            trip.sessionName = sessionInput.value.trim() || "Misión de Estudio";
+            document.getElementById('ticket-session-name').innerText = trip.sessionName;
+
+            document.getElementById('ticket-origin').innerText = escapeHTML(trip.origin.code);
+            document.getElementById('ticket-dest').innerText = escapeHTML(trip.dest.code);
+            document.getElementById('ticket-duration').innerText = document.getElementById('preview-time').innerText;
+            
+            // Calculate ETA
+            const etaDate = new Date(Date.now() + trip.durationMs);
+            const etaTime = etaDate.getHours().toString().padStart(2, '0') + ":" + etaDate.getMinutes().toString().padStart(2, '0');
+            const etaDateStr = etaDate.getDate().toString().padStart(2, '0') + "/" + (etaDate.getMonth() + 1).toString().padStart(2, '0');
+            
+            const ticketArrival = document.getElementById('ticket-arrival');
+            if (ticketArrival) ticketArrival.innerText = etaTime;
+            const ticketArrivalDate = document.getElementById('ticket-arrival-date');
+            if (ticketArrivalDate) ticketArrivalDate.innerText = etaDateStr;
+
+            showScreen('screen-ticket');
+        }
+
+        function startFlight() {
+            // Update session name displays
+            const listTitle = document.getElementById('flight-list-session-name');
+            if (listTitle) listTitle.innerText = trip.sessionName;
+
+            // Actualizar datos del Boucher en el mapa
+            document.getElementById('boucher-origin').innerText = trip.origin.code;
+            document.getElementById('boucher-dest').innerText = trip.dest.code;
+            document.getElementById('boucher-duration').innerText = formatTime(Math.round(trip.durationMs / 60000));
+
+            // Set Start Time and Calculate Arrival
+            trip.startTime = Date.now();
+            totalPausedTime = 0;
+            const arrivalDate = new Date(trip.startTime + trip.durationMs);
+            const arrivalTime = arrivalDate.getHours().toString().padStart(2, '0') + ":" + arrivalDate.getMinutes().toString().padStart(2, '0');
+            const arrivalDateStr = arrivalDate.getDate().toString().padStart(2, '0') + "/" + (arrivalDate.getMonth() + 1).toString().padStart(2, '0');
+            const arrivalFullDate = arrivalDateStr + "/" + arrivalDate.getFullYear().toString().substr(-2);
+            
+            const boucherArrival = document.getElementById('boucher-arrival');
+            if (boucherArrival) boucherArrival.innerText = arrivalTime;
+            const boucherArrivalDate = document.getElementById('boucher-arrival-date');
+            if (boucherArrivalDate) boucherArrivalDate.innerText = arrivalDateStr;
+            
+            const hudArrival = document.getElementById('hud-arrival');
+            if (hudArrival) hudArrival.innerText = arrivalTime;
+            const hudArrivalDate = document.getElementById('hud-arrival-date');
+            if (hudArrivalDate) hudArrivalDate.innerText = arrivalFullDate;
+
+            // Save initial state
+            saveFlightState();
+            lastSaveTime = Date.now();
+
+            // Logic to handle desktop/mobile differences
+            const isDesktop = window.innerWidth >= 1024;
+            const btn = document.getElementById('btn-active-task-toggle');
+            const hud = document.getElementById('active-task-hud');
+
+            if (isDesktop) {
+                // On desktop, show both HUDs by default
+                if (hud) hud.classList.add('open');
+                const taskList = document.getElementById('flight-task-list');
+                if (taskList) taskList.classList.add('open');
+                if (btn) btn.classList.add('button-glow');
+            } else {
+                // On mobile, keep HUD closed and glow the button
+                if (btn) btn.classList.add('button-glow');
+            }
+
+            showScreen('screen-flight');
+            initMap();
+        }
+
+        // --- NEW CANCELLATION LOGIC ---
+        function cancelFlight() {
+            // Mostrar modal de confirmación en lugar de cancelar inmediatamente
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function executeCancellation() {
+            // Ejecutar la lógica real de cancelación
+            clearFlightState();
+            document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('tasks-done-modal').classList.add('hidden');
+            
+            clearInterval(timerInterval);
+            stopMusic();
+
+            const now = Date.now();
+            const elapsedMs = (now - trip.startTime) - totalPausedTime;
+            
+            // Calculate stats
+            const elapsedMins = Math.floor(elapsedMs / 60000);
+            const elapsedHrs = Math.floor(elapsedMins / 60);
+            const remainingMins = elapsedMins % 60;
+            
+            const progress = Math.min(1, elapsedMs / trip.durationMs);
+            const distCovered = Math.floor(trip.distance * progress);
+            
+            const totalTasks = trip.tasks.length;
+            const completedTasks = trip.tasks.filter(t => t.completed).length;
+            const taskPct = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+            // Diferenciar entre Abortar, Aterrizar o Tareas Completadas
+            const isArrival = progress >= 0.99;
+            const allTasksDone = totalTasks > 0 && completedTasks === totalTasks;
+            const titleEl = document.getElementById('summary-title');
+            
+            if (titleEl) {
+                if (isArrival) {
+                    titleEl.innerText = "¡Destino Alcanzado!";
+                } else if (allTasksDone) {
+                    titleEl.innerText = "Resumen de tu Vuelo";
+                } else {
+                    titleEl.innerText = "Vuelo Interrumpido";
+                }
+            }
+
+            // Update modal UI
+            document.getElementById('summary-time').innerText = `${elapsedHrs > 0 ? elapsedHrs + 'h ' : ''}${remainingMins}m`;
+            document.getElementById('summary-dist').innerText = `${distCovered} km`;
+            document.getElementById('summary-task-count').innerText = `${completedTasks}/${totalTasks}`;
+            document.getElementById('summary-task-bar').style.width = `${taskPct}%`;
+
+            // --- MEJORA: Cambio de pantalla inmediato ---
+            // Limpiamos el mapa y volvemos a la pantalla 1 de fondo
+            if (map) { 
+                map.remove(); 
+                map = null; 
+                tileLayer = null; 
+                labelLayer = null; 
+            }
+            showScreen('screen-planner');
+
+            // Show modal
+            document.getElementById('summary-modal').classList.remove('hidden');
+
+            // Play success sound
+            const sfx = document.getElementById('sfx-success');
+            if (sfx) {
+                sfx.currentTime = 0;
+                sfx.play().catch(e => console.log("Audio block"));
+            }
+        }
+
+        function resetApp() {
+            clearFlightState();
+            stopMusic(); 
+            if (timerInterval) clearInterval(timerInterval);
+            if (pauseInterval) clearInterval(pauseInterval);
+            isPaused = false;
+            totalPausedTime = 0;
+            document.getElementById('pause-overlay').classList.add('hidden');
+            if (map) { map.remove(); map = null; tileLayer = null; labelLayer = null; }
+            
+            // Close all modals
+            document.getElementById('summary-modal').classList.add('hidden');
+            document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('success-modal').classList.add('hidden');
+            document.getElementById('tasks-done-modal').classList.add('hidden');
+
+            document.getElementById('origin').value = "";
+            document.getElementById('destination').value = "";
+            document.getElementById('btn-goto-tasks').disabled = true;
+            document.getElementById('preview-box').classList.add('hidden');
+            document.getElementById('btn-finish').classList.add('hidden');
+            
+            // Reset trip data
+            trip.tasks = [];
+            
+            showScreen('screen-planner');
+        }
+
+        // --- MUSIC LOGIC ---
+        function toggleMusicMenu() { 
+            const menu = document.getElementById('music-menu');
+            const taskList = document.getElementById('flight-task-list');
+            const activeHUD = document.getElementById('active-task-hud');
+            const isDesktop = window.innerWidth >= 1024;
+
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (taskList) taskList.classList.remove('open');
+                if (activeHUD) activeHUD.classList.remove('open');
+            }
+
+            if (menu) menu.classList.toggle('open'); 
+        }
+
+        function playTrack(url, element) {
+            const player = document.getElementById('audio-player');
+            const btn = document.getElementById('btn-music-toggle');
+            const icon = document.getElementById('music-icon');
+            const waves = document.getElementById('music-waves');
+            const wavesBars = document.querySelectorAll('.wave-bar');
+            
+            const volSlider = document.getElementById('volume-slider');
+            const currentVol = volSlider ? parseFloat(volSlider.value) : 0.5;
+
+            document.querySelectorAll('.track-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+
+            player.src = url;
+            player.volume = currentVol; 
+            player.play().catch(e => console.log("Interaction needed"));
+
+            btn.classList.add('active', 'playing');
+            icon.style.display = 'none';
+            waves.style.display = 'flex';
+            wavesBars.forEach(bar => bar.style.display = 'block');
+        }
+
+        function changeVolume(val) {
+            document.getElementById('audio-player').volume = val;
+            document.getElementById('vol-label').innerText = Math.round(val * 100) + '%';
+        }
+
+        function stopMusic() {
+            const player = document.getElementById('audio-player');
+            const btn = document.getElementById('btn-music-toggle');
+            const icon = document.getElementById('music-icon');
+            const waves = document.getElementById('music-waves');
+
+            player.pause();
+            player.currentTime = 0;
+            document.querySelectorAll('.track-item').forEach(el => el.classList.remove('selected'));
+            btn.classList.remove('active', 'playing');
+            icon.style.display = 'block';
+            waves.style.display = 'none';
+            setTimeout(() => { document.getElementById('music-menu').classList.remove('open'); }, 200);
+        }
+
+        // --- FLIGHT PERSISTENCE LOGIC ---
+        function saveFlightState() {
+            if (!trip.startTime) return;
+            const now = Date.now();
+            // Guardar el tiempo efectivo (restando pausas)
+            const elapsed = (now - trip.startTime) - totalPausedTime;
+            
+            const state = {
+                trip: trip,
+                elapsed: elapsed,
+                timestamp: now
+            };
+            localStorage.setItem('flyper_active_flight', JSON.stringify(state));
+        }
+
+        function clearFlightState() {
+            localStorage.removeItem('flyper_active_flight');
+        }
+
+        function restoreFlightState() {
+            const saved = localStorage.getItem('flyper_active_flight');
+            if (!saved) return false;
+
+            try {
+                const state = JSON.parse(saved);
+                // Validar si el estado tiene sentido (ej: tiene origen/destino)
+                if (!state.trip || !state.trip.origin || !state.trip.dest) {
+                    clearFlightState();
+                    return false;
+                }
+
+                // Restaurar trip
+                trip = state.trip;
+                
+                // Recalcular startTime para que el tiempo transcurrido sea el mismo que cuando se cerró
+                // "Siga donde se quedó" implica pausar el tiempo.
+                trip.startTime = Date.now() - state.elapsed;
+
+                // Restaurar UI básica
+                if(tomSelectOrigin) tomSelectOrigin.setValue(trip.origin.code, true);
+                if(tomSelectDest) tomSelectDest.setValue(trip.dest.code, true);
+                document.getElementById('session-name-input').value = trip.sessionName;
+                document.getElementById('ticket-session-name').innerText = trip.sessionName;
+                
+                // Update displays like startFlight does
+                updateFlightDisplays(); 
+
+                return true;
+            } catch (e) {
+                console.error("Error restoring flight:", e);
+                clearFlightState();
+                return false;
+            }
+        }
+
+        function updateFlightDisplays() {
+            // Helper to update text elements same as startFlight
+            const listTitle = document.getElementById('flight-list-session-name');
+            if (listTitle) listTitle.innerText = trip.sessionName;
+
+            document.getElementById('boucher-origin').innerText = trip.origin.code;
+            document.getElementById('boucher-dest').innerText = trip.dest.code;
+            document.getElementById('boucher-duration').innerText = formatTime(Math.round(trip.durationMs / 60000));
+
+            const arrivalDate = new Date(trip.startTime + trip.durationMs);
+            const arrivalTime = arrivalDate.getHours().toString().padStart(2, '0') + ":" + arrivalDate.getMinutes().toString().padStart(2, '0');
+            const arrivalDateStr = arrivalDate.getDate().toString().padStart(2, '0') + "/" + (arrivalDate.getMonth() + 1).toString().padStart(2, '0');
+            const arrivalFullDate = arrivalDateStr + "/" + arrivalDate.getFullYear().toString().substr(-2);
+            
+            const boucherArrival = document.getElementById('boucher-arrival');
+            if (boucherArrival) boucherArrival.innerText = arrivalTime;
+            const boucherArrivalDate = document.getElementById('boucher-arrival-date');
+            if (boucherArrivalDate) boucherArrivalDate.innerText = arrivalDateStr;
+            
+            const hudArrival = document.getElementById('hud-arrival');
+            if (hudArrival) hudArrival.innerText = arrivalTime;
+            const hudArrivalDate = document.getElementById('hud-arrival-date');
+            if (hudArrivalDate) hudArrivalDate.innerText = arrivalFullDate;
+        }
+
+        // --- HANGAR & LOCAL STORAGE LOGIC ---
+        function confirmAndSaveItinerary() {
+            saveCurrentItinerary();
+            showBoardingPass();
+        }
+
+        function saveCurrentItinerary() {
+            const sessionInput = document.getElementById('session-name-input');
+            const sessionName = sessionInput.value.trim() || "Misión de Estudio";
+            
+            if (!trip.origin || !trip.dest) {
+                showError("Plan incompleto", "Debes seleccionar origen y destino antes de guardar.");
+                return;
+            }
+
+            const itinerary = {
+                id: Date.now(),
+                name: sessionName,
+                origin: trip.origin,
+                dest: trip.dest,
+                tasks: trip.tasks,
+                durationMs: trip.durationMs,
+                distance: trip.distance,
+                date: new Date().toLocaleDateString()
+            };
+
+            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            history.unshift(itinerary); // Add to beginning
+            localStorage.setItem('flyper_hangar', JSON.stringify(history));
+
+            // Visual Feedback
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Guardado!';
+            btn.classList.replace('text-blue-600', 'text-green-600');
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.replace('text-green-600', 'text-blue-600');
+            }, 2000);
+        }
+
+        function openHangar() {
+            renderHangarList();
+            document.getElementById('hangar-modal').classList.remove('hidden');
+        }
+
+        function closeHangar() {
+            document.getElementById('hangar-modal').classList.add('hidden');
+        }
+
+        function renderHangarList() {
+            const list = document.getElementById('hangar-list');
+            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            
+            list.innerHTML = '';
+
+            if (history.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-10 opacity-40">
+                        <i class="fa-solid fa-plane-slash text-4xl mb-3"></i>
+                        <p class="text-sm">El hangar está vacío.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            history.forEach(item => {
+                const el = document.createElement('div');
+                el.className = "bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex justify-between items-center gap-4 hover:border-blue-400 transition-colors cursor-pointer group";
+                el.onclick = (e) => {
+                    if (e.target.closest('.btn-delete')) return;
+                    loadItinerary(item.id);
+                };
+
+                el.innerHTML = `
+                    <div class="flex-1">
+                        <div class="text-xs text-blue-500 font-bold uppercase tracking-tighter mb-1">${item.date}</div>
+                        <div class="font-bold text-gray-800 dark:text-white leading-tight mb-1">${escapeHTML(item.name)}</div>
+                        <div class="text-[10px] text-gray-500 flex items-center gap-1">
+                            ${escapeHTML(item.origin.code)} <i class="fa-solid fa-arrow-right text-[8px]"></i> ${escapeHTML(item.dest.code)} 
+                            • ${item.tasks.length} tareas
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="btn-delete text-gray-300 hover:text-red-500 p-2 transition-colors" onclick="deleteItinerary(${item.id})">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-500 transition-colors"></i>
+                    </div>
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        function deleteItinerary(id) {
+            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem('flyper_hangar', JSON.stringify(history));
+            renderHangarList();
+        }
+
+        function loadItinerary(id) {
+            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            const item = history.find(i => i.id === id);
+            
+            if (!item) return;
+
+            // Load data into trip object
+            trip.origin = item.origin;
+            trip.dest = item.dest;
+            trip.tasks = [...item.tasks];
+            trip.durationMs = item.durationMs;
+            trip.distance = item.distance;
+            trip.sessionName = item.name;
+
+            // Sync UI selects (manual set because TomSelect is active)
+            if (tomSelectOrigin) tomSelectOrigin.setValue(item.origin.code, true);
+            if (tomSelectDest) tomSelectDest.setValue(item.dest.code, true);
+            
+            // Sync Session Name Input
+            document.getElementById('session-name-input').value = item.name;
+
+            closeHangar();
+            updatePreview();
+            showTasksScreen();
+        }
+
+        // --- PAUSE LOGIC ---
+        let isPaused = false;
+        let totalPausedTime = 0;
+        let pauseStartTime = 0;
+        let pauseInterval = null;
+        let pauseEndTime = 0;
+
+        function togglePauseMenu() {
+            const menu = document.getElementById('pause-menu');
+            const taskList = document.getElementById('flight-task-list');
+            const musicMenu = document.getElementById('music-menu');
+            const activeHUD = document.getElementById('active-task-hud');
+            const isDesktop = window.innerWidth >= 1024;
+            
+            // Close other menus ONLY if not on desktop
+            if (!isDesktop) {
+                if (taskList) taskList.classList.remove('open');
+                if (musicMenu) musicMenu.classList.remove('open');
+                if (activeHUD) activeHUD.classList.remove('open');
+            }
+
+            if (menu) menu.classList.toggle('open');
+        }
+
+        function startPause(minutes) {
+            isPaused = true;
+            togglePauseMenu(); // Close menu
+            
+            // Stop flight timer
+            clearInterval(timerInterval);
+            
+            pauseStartTime = Date.now();
+            pauseEndTime = Date.now() + minutes * 60000;
+            
+            document.getElementById('pause-overlay').classList.remove('hidden');
+            updatePauseLoop(); // Run once immediately
+            pauseInterval = setInterval(updatePauseLoop, 1000);
+        }
+
+        function updatePauseLoop() {
+            const now = Date.now();
+            const remaining = Math.max(0, pauseEndTime - now);
+            
+            if (remaining <= 0) {
+                // Play alarm sound to signal end of break
+                const sfx = document.getElementById('sfx-overtime');
+                if (sfx) {
+                    sfx.currentTime = 0;
+                    sfx.play().catch(e => console.log("Audio block"));
+                }
+                resumeFlight();
+                return;
+            }
+            
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            document.getElementById('pause-countdown').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function resumeFlight() {
+            if (!isPaused) return;
+            
+            clearInterval(pauseInterval);
+            const pauseDuration = Date.now() - pauseStartTime;
+            totalPausedTime += pauseDuration;
+            
+            isPaused = false;
+            document.getElementById('pause-overlay').classList.add('hidden');
+            
+            // Restart flight loop
+            timerInterval = setInterval(loopFlight, 1000);
+        }
+
+        // --- MAP ENGINE & LOOP ---
+        function initMap() {
+            setTimeout(() => {
+                if (map) map.remove();
+                map = L.map('map', { 
+                    zoomControl: false, 
+                    attributionControl: false,
+                    minZoom: 2,
+                    maxBounds: [[-90, -180], [90, 180]],
+                    maxBoundsViscosity: 1.0,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                    touchZoom: true,
+                    dragging: true
+                });
+                updateMapTiles();
+
+                const oLatLon = [trip.origin.lat, trip.origin.lon];
+                const dLatLon = [trip.dest.lat, trip.dest.lon];
+
+                L.polyline([oLatLon, dLatLon], { color: '#0ea5e9', weight: 3, opacity: 0.6, dashArray: '10, 10' }).addTo(map);
+                L.circleMarker(oLatLon, { radius: 5, color: '#0ea5e9', fillOpacity: 1 }).addTo(map);
+                L.circleMarker(dLatLon, { radius: 5, color: '#ef4444', fillOpacity: 1 }).addTo(map);
+
+                map.fitBounds([oLatLon, dLatLon], { padding: [50, 50] });
+                
+                const planeIcon = L.divIcon({
+                    className: 'plane-div',
+                    html: `<i class="fa-solid fa-plane text-3xl plane-icon" style="display:block;"></i>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                planeMarker = L.marker(oLatLon, { icon: planeIcon }).addTo(map);
+
+                renderFlightTasks(); // Prepare list
+                timerInterval = setInterval(loopFlight, 1000);
+            }, 300);
+        }
+
+        function loopFlight() {
+            const now = Date.now();
+            const elapsed = (now - trip.startTime) - totalPausedTime;
+            let progress = elapsed / trip.durationMs;
+
+            if (progress >= 1) {
+                progress = 1;
+                clearInterval(timerInterval);
+                finishFlight();
+            }
+
+            // HUD Data
+            const remaining = Math.max(0, trip.durationMs - elapsed);
+            document.getElementById('hud-timer').innerText = new Date(remaining).toISOString().substr(11, 8);
+            document.getElementById('hud-pct').innerText = Math.floor(progress * 100) + "%";
+            document.getElementById('hud-dist').innerText = Math.floor(trip.distance * progress);
+            
+            const spd = progress >= 1 ? 0 : 850 + Math.floor(Math.random() * 20 - 10);
+            document.getElementById('hud-speed').innerText = spd;
+
+            // Map Movement
+            const lat = trip.origin.lat + (trip.dest.lat - trip.origin.lat) * progress;
+            const lon = trip.origin.lon + (trip.dest.lon - trip.origin.lon) * progress;
+            planeMarker.setLatLng([lat, lon]);
+
+            const p1 = map.latLngToContainerPoint([trip.origin.lat, trip.origin.lon]);
+            const p2 = map.latLngToContainerPoint([trip.dest.lat, trip.dest.lon]);
+            const angleDeg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+            const icon = document.querySelector('.plane-icon');
+            if(icon) icon.style.transform = `rotate(${angleDeg}deg)`; 
+
+            // Save state periodically (every 10 seconds)
+            if (now - lastSaveTime > 10000) {
+                saveFlightState();
+                lastSaveTime = now;
+            }
+
+            // Active Task Logic
+            updateActiveTaskHUD(progress);
+        }
+
+        function updateActiveTaskHUD(globalProgress) {
+            const hud = document.getElementById('active-task-hud');
+            const btn = document.getElementById('btn-active-task-toggle');
+            
+            if (trip.tasks.length === 0 || globalProgress >= 1) {
+                if (btn) btn.style.display = 'none';
+                hud.classList.remove('open');
+                return;
+            } else {
+                if (btn) btn.style.display = 'flex';
+            }
+
+            // MODIFIED: Select the first incomplete task
+            let currentTask = trip.tasks.find(t => !t.completed);
+            
+            // If all tasks are completed, hide the button
+            if (!currentTask) {
+                if (btn) btn.style.display = 'none';
+                hud.classList.remove('open');
+                return;
+            }
+
+            // Find the schedule time window for this specific task
+            // to display the progress bar correctly relative to its allocated time
+            let accumulated = 0;
+            let taskStart = 0;
+            let taskEnd = 0;
+
+            for (let i = 0; i < trip.tasks.length; i++) {
+                const t = trip.tasks[i];
+                const normalizedShare = t.percent / 100;
+                
+                if (t === currentTask) {
+                    taskStart = accumulated;
+                    taskEnd = accumulated + normalizedShare;
+                    break;
+                }
+                accumulated += normalizedShare;
+            }
+
+            document.getElementById('active-task-title').innerText = currentTask.title;
+            
+            // Calculate local progress
+            const taskDuration = taskEnd - taskStart;
+            
+            // Handle edge case of 0% duration (though unlikely)
+            if (taskDuration <= 0) {
+                 document.getElementById('active-task-bar').style.width = '100%';
+                 document.getElementById('active-task-time').innerText = "0m restantes";
+                 return;
+            }
+
+            let localProgress = (globalProgress - taskStart) / taskDuration;
+            
+            // Clamp progress:
+            // If we are ahead of schedule (early), bar is empty.
+            // If we are behind schedule (late), bar is full.
+            if (localProgress < 0) localProgress = 0;
+            if (localProgress > 1) localProgress = 1;
+
+            const pct = Math.floor(localProgress * 100);
+            document.getElementById('active-task-bar').style.width = pct + '%';
+            document.getElementById('active-task-pct').innerText = pct + '%';
+            
+            // Check if time is up for THIS task
+            if (localProgress >= 1) {
+                if (!hud.classList.contains('task-overtime')) {
+                    hud.classList.add('task-overtime');
+                    // Play ringring sound
+                    const sfx = document.getElementById('sfx-overtime');
+                    if (sfx) {
+                        sfx.currentTime = 0;
+                        sfx.play().catch(e => console.log("Audio block"));
+                    }
+                }
+            } else {
+                hud.classList.remove('task-overtime');
+            }
+
+            // Time remaining
+            const taskTotalMs = trip.durationMs * taskDuration;
+            const taskElapsedMs = taskTotalMs * localProgress;
+            const taskRemainingMs = taskTotalMs - taskElapsedMs;
+            const mins = Math.ceil(taskRemainingMs / 60000);
+            
+            if (localProgress >= 1) {
+                document.getElementById('active-task-time').innerText = "¡TIEMPO AGOTADO!";
+            } else {
+                document.getElementById('active-task-time').innerText = mins + "m restantes";
+            }
+        }
+
+        function completeCurrentTask() {
+            let currentTask = trip.tasks.find(t => !t.completed);
+            if (currentTask) {
+                toggleTaskComplete(currentTask.id);
+                // The loop will automatically move to next task
+            }
+        }
+
+        function finishFlight() {
+            clearFlightState();
+            if (pauseInterval) clearInterval(pauseInterval);
+            isPaused = false;
+            document.getElementById('pause-overlay').classList.add('hidden');
+            
+            // En lugar de mostrar un botón pequeño, disparamos el resumen automáticamente
+            document.getElementById('hud-timer').innerText = "LLEGADA";
+            stopMusic(); 
+            
+            // Lanzamos el resumen con una pequeña demora para que se sienta el aterrizaje
+            setTimeout(() => {
+                executeCancellation();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
