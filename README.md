@@ -8,6 +8,12 @@ Simplemente visita [flyper.app](https://flyper.app/) en cualquier navegador web 
 
 ## 🚀 Características Principales
 
+### 🏆 Novedades: Logros y Estadísticas (Nuevo)
+- **Sistema de Progresión:** Desbloquea más de 15 logros únicos como "Primer Despegue", "Trotamundos" o "Sin Escalas".
+- **Centro de Estadísticas:** Visualiza tu rendimiento histórico: horas totales de vuelo, tasa de éxito, aeropuertos visitados y rachas de estudio.
+- **Rachas Diarias:** Mantén tu constancia volando días consecutivos y observa cómo crece tu fuego.
+- **Feedback Visual:** Barras de progreso para los logros pendientes y notificaciones especiales al desbloquear medallas.
+
 ### 🛫 Planificación de Vuelo
 - **Selección de Ruta:** Elige entre más de 50 aeropuertos internacionales reales para definir tu trayecto. La duración del vuelo se calcula en función de la distancia real.
 - **Hangar Personal:** Guarda tus itinerarios frecuentes en el almacenamiento local para cargarlos rápidamente en futuras sesiones.

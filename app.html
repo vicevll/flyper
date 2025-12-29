@@ -816,6 +816,7 @@
     <audio id="audio-player" loop crossorigin="anonymous"></audio>
     <audio id="sfx-success" src="src/sounds/copano.mp3" preload="auto"></audio>
     <audio id="sfx-overtime" src="src/sounds/ringring.mp3" preload="auto"></audio>
+    <audio id="sfx-achievement" src="src/sounds/Sonido%20de%20moneda%20Mario.mp3" preload="auto"></audio>
 
     <!-- APP CONTAINER -->
     <div id="app" class="relative w-full h-full">
@@ -830,6 +831,14 @@
 
             <!-- BOTONES SUPERIORES (DENTRO DEL PLANIFICADOR) -->
             <div class="absolute top-4 right-4 z-50 flex gap-3">
+                <button onclick="openStats()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Estadísticas">
+                    <i class="fa-solid fa-chart-simple text-blue-500"></i>
+                    <span class="text-xs font-bold hidden sm:inline">Stats</span>
+                </button>
+                <button onclick="openAchievements()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Logros">
+                    <i class="fa-solid fa-trophy text-yellow-500"></i>
+                    <span class="text-xs font-bold hidden sm:inline">Trofeos</span>
+                </button>
                 <button onclick="openHangar()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Mis Itinerarios">
                     <i class="fa-solid fa-box-archive"></i>
                     <span class="text-xs font-bold hidden sm:inline">Mis Vuelos</span>
@@ -1454,6 +1463,52 @@
             </div>
         </div>
 
+        <!-- MODAL ESTADÍSTICAS (NUEVO) -->
+        <div id="stats-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full max-h-[85vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-black text-gray-800 dark:text-white">Estadísticas</h2>
+                            <p class="text-xs text-gray-500">Tu historial de piloto</p>
+                        </div>
+                    </div>
+                    <button onclick="closeStats()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-800" id="stats-content">
+                    <!-- Stats Injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL LOGROS (ACHIEVEMENTS) -->
+        <div id="achievements-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-black text-gray-800 dark:text-white">Trofeos y Logros</h2>
+                            <p class="text-xs text-gray-500" id="achievements-summary">Cargando...</p>
+                        </div>
+                    </div>
+                    <button onclick="closeAchievements()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-800">
+                    <div id="achievements-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Los logros se inyectan aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- MODAL HANGAR (ITINERARIOS GUARDADOS) -->
         <div id="hangar-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
             <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -1500,6 +1555,7 @@
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="src/airports.js"></script>
+    <script src="src/achievements.js"></script>
     <script>
         // --- UTILS ---
         function escapeHTML(str) {
@@ -1521,6 +1577,7 @@
         let flightPolyline = null, planeMarker = null, timerInterval = null;
         let lastSaveTime = 0;
 
+        let usedPause = false;
         let trip = {
             origin: null,
             dest: null,
@@ -1932,6 +1989,299 @@
         }
 
 
+        // --- ACHIEVEMENTS & STATS LOGIC ---
+        function getStats() {
+            const defaultStats = {
+                totalFlightTime: 0,
+                totalFlights: 0,
+                abortedFlights: 0,
+                airportsVisited: [],
+                currentStreak: 0,
+                longestStreak: 0,
+                lastFlightDate: null,
+                perfectFlights: 0,
+                flightsWithoutPause: 0,
+                longestSingleFlight: 0,
+                flightsByHour: {},
+                sharedPlans: 0,
+                savedItineraries: 0
+            };
+            return { ...defaultStats, ...JSON.parse(localStorage.getItem('flyper_stats') || "{}") };
+        }
+
+        function saveStats(stats) {
+            localStorage.setItem('flyper_stats', JSON.stringify(stats));
+        }
+
+        function incrementAbortedFlights() {
+            const stats = getStats();
+            stats.abortedFlights = (stats.abortedFlights || 0) + 1;
+            saveStats(stats);
+        }
+
+        function getUnlockedAchievements() {
+            return JSON.parse(localStorage.getItem('flyper_achievements')) || {};
+        }
+
+        function saveUnlockedAchievements(unlocked) {
+            localStorage.setItem('flyper_achievements', JSON.stringify(unlocked));
+        }
+
+        function updateStatsOnFlightComplete(completedTrip, pauseUsed) {
+            const stats = getStats();
+            
+            // Basic increments
+            stats.totalFlights++;
+            stats.totalFlightTime += Math.round(completedTrip.durationMs / 60000);
+            
+            // Airports
+            if (!stats.airportsVisited.includes(completedTrip.origin.code)) stats.airportsVisited.push(completedTrip.origin.code);
+            if (!stats.airportsVisited.includes(completedTrip.dest.code)) stats.airportsVisited.push(completedTrip.dest.code);
+
+            // Productivity
+            const allTasksDone = completedTrip.tasks.length > 0 && completedTrip.tasks.every(t => t.completed);
+            if (allTasksDone) stats.perfectFlights++;
+            if (!pauseUsed) stats.flightsWithoutPause++;
+            
+            const flightMins = Math.round(completedTrip.durationMs / 60000);
+            if (flightMins > stats.longestSingleFlight) stats.longestSingleFlight = flightMins;
+
+            // Schedule
+            if (!stats.flightsByHour) stats.flightsByHour = {};
+            const hour = new Date().getHours().toString();
+            stats.flightsByHour[hour] = (stats.flightsByHour[hour] || 0) + 1;
+
+            // Streaks
+            updateStreak(stats);
+
+            saveStats(stats);
+            checkAchievements(stats);
+        }
+
+        function updateStreak(stats) {
+            const today = new Date().toDateString();
+            const lastDate = stats.lastFlightDate ? new Date(stats.lastFlightDate).toDateString() : null;
+
+            if (today === lastDate) return; // Already flew today
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (lastDate === yesterday.toDateString()) {
+                stats.currentStreak++;
+            } else {
+                stats.currentStreak = 1;
+            }
+
+            if (stats.currentStreak > stats.longestStreak) {
+                stats.longestStreak = stats.currentStreak;
+            }
+            
+            stats.lastFlightDate = new Date().toISOString();
+        }
+
+        function updateStatsForAction(type) {
+            const stats = getStats();
+            if (type === 'save') stats.savedItineraries++;
+            if (type === 'share') stats.sharedPlans++;
+            saveStats(stats);
+            checkAchievements(stats);
+        }
+
+        function checkAchievements(stats) {
+            const unlocked = getUnlockedAchievements();
+            const newUnlocks = [];
+
+            for (const key in ACHIEVEMENTS) {
+                if (unlocked[key]) continue; // Already unlocked
+
+                const achievement = ACHIEVEMENTS[key];
+                if (achievement.condition(stats)) {
+                    unlocked[key] = new Date().toISOString();
+                    newUnlocks.push(achievement);
+                    showAchievementUnlocked(achievement);
+                }
+            }
+
+            if (newUnlocks.length > 0) {
+                saveUnlockedAchievements(unlocked);
+            }
+        }
+
+        function showAchievementUnlocked(achievement) {
+            // Play sound
+            const sfx = document.getElementById('sfx-achievement');
+            if (sfx) {
+                sfx.currentTime = 0;
+                sfx.play().catch(e => {});
+            }
+
+            showToast(`¡Logro Desbloqueado: ${achievement.name}!`, "success");
+            
+            // If modal is open, refresh it
+            if (!document.getElementById('achievements-modal').classList.contains('hidden')) {
+                renderAchievements();
+            }
+        }
+
+        function openAchievements() {
+            renderAchievements();
+            document.getElementById('achievements-modal').classList.remove('hidden');
+        }
+
+        function closeAchievements() {
+            document.getElementById('achievements-modal').classList.add('hidden');
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achievements-grid');
+            const unlocked = getUnlockedAchievements();
+            const stats = getStats();
+            grid.innerHTML = '';
+
+            const unlockedCount = Object.keys(unlocked).length;
+            const totalCount = Object.keys(ACHIEVEMENTS).length;
+            
+            document.getElementById('achievements-summary').innerText = 
+                `${unlockedCount}/${totalCount} desbloqueados • ${Math.floor(stats.totalFlightTime / 60)}h ${stats.totalFlightTime % 60}m vuelo total`;
+
+            // Nota sobre el tiempo
+            const note = document.createElement('div');
+            note.className = "col-span-full bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800 mb-2 flex items-start gap-2";
+            note.innerHTML = `
+                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
+                <p class="text-xs text-blue-800 dark:text-blue-200">
+                    <strong>Importante:</strong> Las horas de vuelo y estadísticas solo se registran al 
+                    <span class="underline decoration-blue-500">aterrizar y completar el vuelo</span>. 
+                    Si abortas a mitad de camino, el progreso de esa sesión no se guardará.
+                </p>
+            `;
+            grid.appendChild(note);
+
+            for (const key in ACHIEVEMENTS) {
+                const ach = ACHIEVEMENTS[key];
+                const isUnlocked = !!unlocked[key];
+                const dateStr = isUnlocked ? new Date(unlocked[key]).toLocaleDateString() : '';
+                
+                // Progress calculation
+                const currentVal = ach.getValue ? ach.getValue(stats) : 0;
+                const targetVal = ach.target || 1;
+                const percent = Math.min(100, Math.max(0, (currentVal / targetVal) * 100));
+
+                const el = document.createElement('div');
+                el.className = `p-4 rounded-2xl border flex flex-col gap-2 transition-all relative overflow-hidden ${
+                    isUnlocked 
+                    ? 'bg-white dark:bg-gray-700 border-yellow-200 dark:border-yellow-900/50 shadow-sm' 
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 opacity-90'
+                }`;
+
+                el.innerHTML = `
+                    <div class="flex items-start gap-4 z-10">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0 ${
+                            isUnlocked ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-200 text-gray-400 grayscale'
+                        }">
+                            ${ach.icon}
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-800 dark:text-white text-sm flex justify-between">
+                                <span>${ach.name}</span>
+                                ${!isUnlocked ? `<span class="text-xs text-gray-400">${currentVal}/${targetVal}</span>` : ''}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 leading-tight mb-1">${ach.description}</div>
+                            
+                            ${isUnlocked 
+                                ? `<div class="text-[10px] text-blue-500 font-bold mt-1"><i class="fa-solid fa-check"></i> Conseguido: ${dateStr}</div>` 
+                                : `
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                                        <div class="bg-blue-400 h-full rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                                    </div>
+                                    <div class="text-[9px] text-gray-400 text-right mt-0.5">${percent.toFixed(0)}%</div>
+                                `
+                            }
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(el);
+            }
+        }
+
+        // --- STATS MODAL LOGIC ---
+        function openStats() {
+            renderStats();
+            document.getElementById('stats-modal').classList.remove('hidden');
+        }
+
+        function closeStats() {
+            document.getElementById('stats-modal').classList.add('hidden');
+        }
+
+        function renderStats() {
+            const stats = getStats();
+            const container = document.getElementById('stats-content');
+            
+            // Calculos auxiliares
+            const totalHours = Math.floor(stats.totalFlightTime / 60);
+            const totalMins = stats.totalFlightTime % 60;
+            const successRate = stats.totalFlights > 0 
+                ? Math.round((stats.totalFlights / (stats.totalFlights + (stats.abortedFlights || 0))) * 100) 
+                : 0;
+
+            container.innerHTML = `
+                <!-- Main Stats Grid -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800/50 flex flex-col items-center justify-center text-center">
+                        <div class="text-3xl font-black text-blue-600 dark:text-blue-400 mb-1">${totalHours}h ${totalMins}m</div>
+                        <div class="text-xs text-blue-400 uppercase font-bold tracking-wider">Tiempo de Vuelo</div>
+                    </div>
+                    <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-2xl border border-orange-100 dark:border-orange-800/50 flex flex-col items-center justify-center text-center">
+                        <div class="text-3xl font-black text-orange-500 dark:text-orange-400 mb-1 flex items-center gap-2">
+                            ${stats.currentStreak} <i class="fa-solid fa-fire text-xl"></i>
+                        </div>
+                        <div class="text-xs text-orange-400 uppercase font-bold tracking-wider">Racha Actual</div>
+                    </div>
+                </div>
+
+                <!-- Secondary Stats Grid -->
+                <div class="grid grid-cols-3 gap-2 mb-6">
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl text-center">
+                        <i class="fa-solid fa-plane-arrival text-green-500 text-xl mb-2"></i>
+                        <div class="font-bold text-gray-800 dark:text-white text-lg">${stats.totalFlights}</div>
+                        <div class="text-[10px] text-gray-400 uppercase">Completados</div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl text-center">
+                        <i class="fa-solid fa-plane-slash text-red-400 text-xl mb-2"></i>
+                        <div class="font-bold text-gray-800 dark:text-white text-lg">${stats.abortedFlights || 0}</div>
+                        <div class="text-[10px] text-gray-400 uppercase">Abortados</div>
+                    </div>
+                     <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl text-center">
+                        <i class="fa-solid fa-map-location-dot text-indigo-400 text-xl mb-2"></i>
+                        <div class="font-bold text-gray-800 dark:text-white text-lg">${stats.airportsVisited.length}</div>
+                        <div class="text-[10px] text-gray-400 uppercase">Aeropuertos</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Rows -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Tasa de Éxito</span>
+                        <span class="font-bold text-gray-800 dark:text-white">${successRate}%</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Mejor Racha Histórica</span>
+                        <span class="font-bold text-gray-800 dark:text-white">${stats.longestStreak} días</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Vuelo más largo</span>
+                        <span class="font-bold text-gray-800 dark:text-white">${stats.longestSingleFlight} min</span>
+                    </div>
+                     <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Vuelos Perfectos (100% tareas)</span>
+                        <span class="font-bold text-gray-800 dark:text-white">${stats.perfectFlights}</span>
+                    </div>
+                </div>
+            `;
+        }
+
         // --- INIT & CORE LOGIC ---
         window.onload = () => { 
             loadSelects(); 
@@ -2096,6 +2446,7 @@
 
             // Set Start Time and Calculate Arrival
             trip.startTime = Date.now();
+            usedPause = false;
             totalPausedTime = 0;
             const arrivalDate = new Date(trip.startTime + trip.durationMs);
             const arrivalTime = arrivalDate.getHours().toString().padStart(2, '0') + ":" + arrivalDate.getMinutes().toString().padStart(2, '0');
@@ -2174,6 +2525,11 @@
             const isArrival = progress >= 0.99;
             const allTasksDone = totalTasks > 0 && completedTasks === totalTasks;
             const titleEl = document.getElementById('summary-title');
+            
+            // Increment Aborted Stats ONLY if not successful landing
+            if (!isArrival) {
+                incrementAbortedFlights();
+            }
             
             if (titleEl) {
                 if (isArrival) {
@@ -2408,6 +2764,7 @@
             let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
             history.unshift(itinerary); // Add to beginning
             localStorage.setItem('flyper_hangar', JSON.stringify(history));
+            updateStatsForAction('save');
 
             // Visual Feedback
             const btn = event.currentTarget;
@@ -2500,6 +2857,7 @@
                 const url = window.location.origin + window.location.pathname + "?plan=" + encoded;
 
                 navigator.clipboard.writeText(url).then(() => {
+                    updateStatsForAction('share');
                     showToast("¡Link copiado al portapapeles!", "success");
                 }).catch(err => {
                     console.error('Error copying link: ', err);
@@ -2716,6 +3074,7 @@
 
         function startPause(minutes) {
             isPaused = true;
+            usedPause = true;
             togglePauseMenu(); // Close menu
             
             // Stop flight timer
@@ -2945,6 +3304,9 @@
         }
 
         function finishFlight() {
+            // Update Stats Logic
+            updateStatsOnFlightComplete(trip, usedPause);
+
             clearFlightState();
             if (pauseInterval) clearInterval(pauseInterval);
             isPaused = false;
