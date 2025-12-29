@@ -18,6 +18,11 @@ Simplemente visita [flyper.app](https://flyper.app/) en cualquier navegador web 
 - **Persistencia Inteligente:** ¿Cerraste la pestaña por error? No hay problema. Flyper guarda automáticamente el estado de tu vuelo. Al volver a abrirlo, continuarás exactamente donde lo dejaste.
 - **Modo Pausa:** Tómate un descanso con el botón de pausa. El tiempo de vuelo se detiene para que puedas relajarte sin afectar tus estadísticas de arribo.
 
+### 🤝 Compartir e Importar
+- **Compartir Vuelo:** Genera un enlace único para cualquier itinerario en tu Hangar con un solo clic.
+- **Importación Directa:** Abre un enlace compartido para cargar automáticamente el plan de estudio completo, incluyendo origen, destino y desglose de tareas.
+- **Privado y Ligero:** Los datos viajan codificados en la propia URL, sin necesidad de bases de datos ni cuentas de usuario.
+
 ### 🎧 Atmósfera Inmersiva
 - **Mapa en Vivo:** Visualiza tu avión cruzando el mundo en tiempo real sobre un mapa interactivo.
 - **Radio a Bordo:** Sintoniza estaciones de Lofi, Piano o Sonidos de Lluvia integradas directamente en la interfaz.
