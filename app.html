@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="src/Flyper Logo.ico" type="image/x-icon">
+    <link rel="icon" href="src/favicon.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flyper - Study Timer</title>
+    <title>Flyper - Vuelo en Curso</title>
     
     <!-- Tailwind CSS with Dark Mode Config -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,10 +28,6 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
-    <!-- Tom Select (Searchable Dropdown) -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -52,68 +48,7 @@
             padding: 0;
         }
 
-        /* --- Tom Select Customization (Dark/Light Mode) --- */
-        .ts-control {
-            background-color: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            font-weight: 500;
-        }
-        .ts-control .item {
-            color: #1f2937; /* gray-800 */
-        }
-        html.dark .ts-control .item {
-            color: #f3f4f6; /* gray-100 */
-        }
-        .ts-control input {
-            color: #1f2937 !important;
-        }
-        html.dark .ts-control input {
-            color: #f3f4f6 !important;
-        }
-        
-        .ts-dropdown {
-            border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            overflow: hidden;
-            z-index: 200;
-        }
-        html.dark .ts-dropdown {
-            background-color: #1f2937;
-            border: 1px solid #374151;
-            color: #f3f4f6;
-        }
-        .ts-dropdown .option {
-            padding: 10px 16px;
-        }
-        html.dark .ts-dropdown .option {
-            color: #e5e7eb;
-        }
-        .ts-dropdown .option.active, .ts-dropdown .option:hover {
-            background-color: #eff6ff; /* blue-50 */
-            color: #1d4ed8; /* blue-700 */
-        }
-        html.dark .ts-dropdown .option.active, html.dark .ts-dropdown .option:hover {
-            background-color: #1e3a8a; /* blue-900 */
-            color: #60a5fa; /* blue-400 */
-        }
-        .ts-dropdown .optgroup-header {
-            background-color: #f3f4f6;
-            color: #6b7280;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        html.dark .ts-dropdown .optgroup-header {
-            background-color: #374151;
-            color: #9ca3af;
-        }
-
         /* Original Styles */
-
         body {
             font-family: 'Inter', sans-serif;
             overflow: hidden;
@@ -128,18 +63,17 @@
             width: 100%;
             height: 100%;
             z-index: 0;
-            background: #f3f4f6; /* Matching bg-gray-100 */
+            background: #f3f4f6;
             transition: filter 0.5s ease;
         }
         
-        /* Ajuste para mapa oscuro si tarda en cargar tiles */
         html.dark #map {
-            background: #030712; /* Matching bg-gray-950 */
+            background: #030712;
         }
 
         /* Estilo del Avión */
         .plane-icon {
-            color: #0077b6; /* Color azul solicitado */
+            color: #0077b6;
             filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.4));
             transition: transform 0.2s linear;
             transform-origin: center center;
@@ -147,69 +81,8 @@
         }
         
         html.dark .plane-icon {
-            color: #38bdf8; /* Azul más claro en modo oscuro */
+            color: #38bdf8;
             filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.8));
-        }
-
-        /* Transiciones de Pantalla */
-        .screen {
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
-        .hidden-screen {
-            opacity: 0;
-            pointer-events: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            transform: scale(0.95);
-        }
-        .active-screen {
-            opacity: 1;
-            pointer-events: auto;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 50;
-            transform: scale(1);
-        }
-
-        /* Ticket Styles */
-        .boarding-pass {
-            /* background definido en clases tailwind */
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.3s ease;
-        }
-        .pass-header {
-            background: #0077b6; /* Coincidir con el azul del avión */
-            color: white;
-            padding: 1.5rem;
-        }
-        html.dark .pass-header {
-            background: #0ea5e9;
-        }
-        .pass-body {
-            padding: 2rem;
-            transition: background-color 0.3s ease;
-        }
-        .pass-footer {
-            padding: 1.5rem;
-            border-top: 2px dashed #cbd5e1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-        html.dark .pass-footer {
-            border-top-color: #475569;
         }
 
         /* Glass HUD & Buttons */
@@ -229,18 +102,17 @@
         .hud-panel {
             border-radius: 12px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-            @apply glass-panel; /* Usando mixin conceptual */
+            @apply glass-panel;
         }
         
-        /* Aplicando estilos glass manualmente a clases específicas con sombras mejoradas */
-        .hud-panel, .music-btn, .music-menu, .theme-toggle, .task-panel, .ts-dropdown, .cancel-btn {
+        .hud-panel, .music-btn, .music-menu, .theme-toggle, .task-panel, .cancel-btn {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.5)) !important;
             backdrop-filter: blur(12px) !important;
             -webkit-backdrop-filter: blur(12px) !important;
             border: 1px solid rgba(255,255,255,0.6) !important;
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2), 0 4px 10px -5px rgba(0, 0, 0, 0.1) !important;
         }
-        html.dark .hud-panel, html.dark .music-btn, html.dark .music-menu, html.dark .theme-toggle, html.dark .task-panel, html.dark .ts-dropdown, html.dark .cancel-btn {
+        html.dark .hud-panel, html.dark .music-btn, html.dark .music-menu, html.dark .theme-toggle, html.dark .task-panel, html.dark .cancel-btn {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.7)) !important;
             border: 1px solid rgba(255,255,255,0.1) !important;
             box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), 0 5px 15px -5px rgba(0, 0, 0, 0.3) !important;
@@ -271,11 +143,10 @@
             color: #38bdf8;
         }
         
-        /* Botón de Cancelar específico */
         .cancel-btn {
             background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(239, 68, 68, 0.5); /* Borde rojo suave */
-            color: #ef4444; /* Texto rojo */
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ef4444;
         }
         html.dark .cancel-btn {
             background: rgba(15, 23, 42, 0.9);
@@ -296,7 +167,6 @@
             border: 2px solid #38bdf8;
         }
         
-        /* Animación de ondas musicales */
         @keyframes sound-wave {
             0% { transform: scaleY(1); }
             50% { transform: scaleY(0.5); }
@@ -315,18 +185,17 @@
         .playing .wave-bar:nth-child(2) { animation-delay: 0.2s; }
         .playing .wave-bar:nth-child(3) { animation-delay: 0.4s; }
 
-        /* Standardized Flight Modals (Music, Tasks, Active Task) */
         .music-menu, .task-overlay-list {
             position: absolute;
             top: 100px;
             left: 50%;
             transform: translateX(-50%) translateY(-20px);
             width: 320px;
-            max-height: 60vh; /* Increased slightly */
-            overflow-y: auto !important; /* Restore scrolling */
+            max-height: 60vh;
+            overflow-y: auto !important;
             border-radius: 20px;
             padding: 16px;
-            z-index: 1000; /* High z-index like active task */
+            z-index: 1000;
             opacity: 0;
             pointer-events: none;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -339,7 +208,6 @@
             pointer-events: auto;
         }
 
-        /* Active Task Menu specific (positioned at top) */
         .active-task-menu {
             position: absolute;
             top: 100px;
@@ -361,20 +229,19 @@
             pointer-events: auto;
         }
 
-        /* Desktop specific positioning (>= 1024px) */
         @media (min-width: 1024px) {
             .active-task-menu {
                 left: 24px !important;
                 top: 100px !important;
                 transform: translateY(-20px) !important;
-                width: 380px !important; /* Enlarged */
+                width: 380px !important;
                 max-height: 35vh;
             }
             .task-overlay-list {
                 left: 24px !important;
-                top: 310px !important; /* Brought closer to Active Task (was 400px) */
+                top: 310px !important;
                 transform: translateY(-20px) !important;
-                width: 380px !important; /* Enlarged */
+                width: 380px !important;
                 max-height: 55vh;
             }
             .active-task-menu.open, .task-overlay-list.open, .music-menu.open {
@@ -382,10 +249,9 @@
                 opacity: 1 !important;
                 pointer-events: auto !important;
             }
-            /* Music menu top-right positioning */
             .music-menu {
                 top: 100px !important;
-                right: 80px !important; /* Moved further left to clear buttons (was 24px) */
+                right: 80px !important;
                 left: auto !important;
                 transform: translateY(-20px) !important;
             }
@@ -412,16 +278,15 @@
             background: #334155;
         }
         .track-item.selected {
-            background: #e0f2fe; /* blue-50 */
+            background: #e0f2fe;
             color: #0077b6;
             font-weight: 600;
         }
         html.dark .track-item.selected {
-            background: #0c4a6e; /* sky-900 */
-            color: #7dd3fc; /* sky-300 */
+            background: #0c4a6e;
+            color: #7dd3fc;
         }
         
-        /* Slider de Volumen */
         input[type=range] {
             width: 100%; 
             height: 6px;
@@ -452,27 +317,6 @@
             background: #475569;
         }
 
-        /* Estilos específicos para To-Do List */
-        .task-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: grab;
-        }
-        .task-card:active {
-            cursor: grabbing;
-        }
-        .task-card.sortable-ghost {
-            opacity: 0.4;
-            background: #e2e8f0;
-        }
-        html.dark .task-card.sortable-ghost {
-            background: #334155;
-        }
-        
-        /* Task Panel en vuelo (handled by standardized class) */
-        .task-overlay-list {
-            /* Styles inherited from .active-task-menu / .music-menu combo above */
-        }
-        
         .active-task-pulse {
             animation: pulse-border 2s infinite;
         }
@@ -482,7 +326,6 @@
             100% { border-color: rgba(14, 165, 233, 0.5); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
         }
 
-        /* Flight task list styles */
         .flight-task-item {
             transition: all 0.2s ease;
         }
@@ -518,7 +361,6 @@
             box-shadow: 0 4px 20px rgba(94, 96, 206, 0.6) !important;
         }
 
-        /* Right Button Stack Layout */
         .right-button-stack {
             position: absolute;
             top: 55%;
@@ -536,93 +378,26 @@
         }
 
         /* FLYPER Logo Styles */
-        .flyper-logo {
-            width: 80px; /* Reducido de 120px */
+        .flyper-logo-map {
+            width: 45px;
             height: auto;
             margin-bottom: 2rem;
             transition: transform 0.3s ease, filter 0.3s ease;
         }
 
-        .flyper-logo img {
+        .flyper-logo-map img {
             width: 100%;
             height: auto;
             filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));
             transition: filter 0.3s ease;
         }
 
-        html.dark .flyper-logo img {
+        html.dark .flyper-logo-map img {
             filter: drop-shadow(0px 0px 12px rgba(56,189,248,0.25));
-        }
-
-        .logo-blue {
-            filter: invert(31%) sepia(94%) saturate(1125%) hue-rotate(174deg) brightness(92%) contrast(101%);
-        }
-        
-        html.dark .logo-blue {
-            filter: invert(72%) sepia(54%) saturate(4244%) hue-rotate(171deg) brightness(101%) contrast(98%);
-        }
-
-        .flyper-logo:hover {
-            transform: scale(1.03);
-        }
-
-        /* Decorative Elements */
-        .decorative-bg-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .decorative-circle {
-            position: absolute;
-            width: 80vh; /* Aumentado para que sea dominante */
-            height: 80vh;
-            max-width: 90vw;
-            max-height: 90vw;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(0, 119, 182, 0.05));
-            backdrop-filter: blur(80px);
-            -webkit-backdrop-filter: blur(80px);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 0 100px rgba(14, 165, 233, 0.1);
-        }
-
-        /* Noise effect */
-        .decorative-circle::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.08;
-            z-index: -1;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            border-radius: 50%;
-        }
-
-        html.dark .decorative-circle {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(0, 119, 182, 0.02));
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         /* Responsive sizing */
         @media (max-width: 768px) {
-            .flyper-logo {
-                width: 70px;
-            }
-            .decorative-circle {
-                width: 400px;
-                height: 400px;
-            }
             .flyper-logo-map {
                 width: 45px;
             }
@@ -634,9 +409,8 @@
                 padding: 12px !important;
             }
             #hud-timer {
-                font-size: 1.25rem !important; /* Más pequeño en móvil */
+                font-size: 1.25rem !important;
             }
-            /* Unificar HUD en móvil */
             .max-w-3xl.mx-auto.flex.flex-wrap {
                 flex-wrap: nowrap !important;
                 gap: 4px !important;
@@ -661,13 +435,6 @@
         }
 
         @media (max-width: 576px) {
-            .flyper-logo {
-                width: 60px;
-            }
-            .decorative-circle {
-                width: 300px;
-                height: 300px;
-            }
             .flyper-logo-map {
                 width: 40px;
             }
@@ -684,9 +451,6 @@
             }
             .glass-panel {
                 padding: 1.5rem !important;
-            }
-            #screen-todo .glass-panel {
-                height: 90vh;
             }
         }
 
@@ -706,7 +470,7 @@
             }
         }
 
-        /* Prevent text selection for better app feel on mobile */
+        /* Prevent text selection */
         body {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -723,7 +487,7 @@
         /* Boucher Peek Effect Styles */
         .boucher-peek {
             position: absolute;
-            bottom: -160px; /* Mostrando solo la parte superior (mango) */
+            bottom: -160px;
             left: 50%;
             transform: translateX(-50%);
             width: 320px;
@@ -821,229 +585,8 @@
     <!-- APP CONTAINER -->
     <div id="app" class="relative w-full h-full">
 
-        <!-- PANTALLA 1: PLANIFICADOR (VUELO) -->
-        <div id="screen-planner" class="active-screen flex flex-col items-center justify-center p-4 h-full bg-gray-100 dark:bg-gray-950 transition-colors duration-300 overflow-hidden">
-            
-            <!-- DECORACIÓN DE FONDO -->
-            <div class="decorative-bg-container">
-                <div class="decorative-circle"></div>
-            </div>
-
-            <!-- BOTONES SUPERIORES (DENTRO DEL PLANIFICADOR) -->
-            <div class="absolute top-4 right-4 z-50 flex gap-3">
-                <button onclick="openStats()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Estadísticas">
-                    <i class="fa-solid fa-chart-simple text-blue-500"></i>
-                    <span class="text-xs font-bold hidden sm:inline">Stats</span>
-                </button>
-                <button onclick="openAchievements()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Logros">
-                    <i class="fa-solid fa-trophy text-yellow-500"></i>
-                    <span class="text-xs font-bold hidden sm:inline">Trofeos</span>
-                </button>
-                <button onclick="openHangar()" class="theme-toggle flex items-center justify-center gap-2 px-4 w-auto rounded-full" title="Mis Itinerarios">
-                    <i class="fa-solid fa-box-archive"></i>
-                    <span class="text-xs font-bold hidden sm:inline">Mis Vuelos</span>
-                </button>
-                <a href="https://github.com/vicevll/flyper" target="_blank" class="theme-toggle flex items-center justify-center" title="Ver en GitHub">
-                    <i class="fa-brands fa-github text-xl"></i>
-                </a>
-                <button onclick="toggleTheme()" class="theme-toggle" title="Cambiar Tema">
-                    <i class="fa-solid fa-moon dark:hidden"></i>
-                    <i class="fa-solid fa-sun hidden dark:inline text-yellow-400"></i>
-                </button>
-            </div>
-
-            <!-- Logo FLYPER -->
-
-            <div class="glass-panel p-8 rounded-3xl shadow-2xl w-full max-w-md relative z-10">
-                <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-500/10 dark:bg-blue-400/10 rounded-full mb-4 transition-colors">
-                        <img src="src/FLYPER_LOGO.svg" class="w-10 h-10 object-contain logo-blue" alt="Flyper Logo">
-                    </div>
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Plan de Vuelo</h1>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">Configura tu sesión de estudio</p>
-                </div>
-
-                <div class="space-y-6">
-                    <!-- Origen -->
-                    <div class="relative">
-                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">1. Aeropuerto de Salida</label>
-                        <div class="flex items-center bg-white/50 dark:bg-black/20 border border-white/50 dark:border-white/10 rounded-xl p-1 hover:border-blue-400 transition-colors">
-                            <i class="fa-solid fa-plane-departure text-blue-500/50 dark:text-blue-400/50 ml-3 mr-1 w-5 text-center"></i>
-                            <select id="origin" class="w-full bg-transparent outline-none text-gray-800 dark:text-white font-medium cursor-pointer" onchange="updatePreview()">
-                                <option value="" disabled selected class="dark:bg-gray-800">Seleccionar origen...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Destino -->
-                    <div class="relative">
-                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">2. Aeropuerto de Destino</label>
-                        <div class="flex items-center bg-white/50 dark:bg-black/20 border border-white/50 dark:border-white/10 rounded-xl p-1 hover:border-blue-400 transition-colors">
-                            <i class="fa-solid fa-location-dot text-blue-500/50 dark:text-blue-400/50 ml-3 mr-1 w-5 text-center"></i>
-                            <select id="destination" class="w-full bg-transparent outline-none text-gray-800 dark:text-white font-medium cursor-pointer" onchange="updatePreview()">
-                                <option value="" disabled selected class="dark:bg-gray-800">Seleccionar destino...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Previsualización -->
-                    <div id="preview-box" class="hidden bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 flex justify-between items-center transition-colors">
-                        <div>
-                            <div class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Tiempo de Vuelo</div>
-                            <div class="text-xl font-bold text-blue-900 dark:text-blue-100" id="preview-time">-- min</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xs text-blue-500 dark:text-blue-400">Distancia</div>
-                            <div class="text-sm font-semibold text-blue-800 dark:text-blue-200" id="preview-dist">-- km</div>
-                        </div>
-                    </div>
-
-                    <!-- Botón siguiente -->
-                    <button id="btn-goto-tasks" disabled onclick="showTasksScreen()" class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black dark:hover:bg-blue-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
-                        Planificar Estudio <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- FOOTER DISFRUTA -->
-            <div class="absolute bottom-10 w-full text-center text-gray-400 dark:text-gray-500 text-sm font-medium flex items-center justify-center gap-2 z-10 animate-pulse">
-                <span>Disfruta</span>
-                <i class="fa-solid fa-heart text-blue-500"></i>
-            </div>
-        </div>
-
-        <!-- PANTALLA 1.5: TO-DO LIST (PLAN DE ESTUDIO) -->
-        <div id="screen-todo" class="hidden-screen flex items-center justify-center p-4 h-full bg-transparent">
-            <div class="glass-panel p-6 rounded-3xl shadow-2xl w-full max-w-lg h-[80vh] flex flex-col relative z-10">
-                
-                <!-- Header -->
-                <div class="flex items-center justify-between mb-4">
-                    <button onclick="showScreen('screen-planner')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                        <i class="fa-solid fa-arrow-left"></i> Volver
-                    </button>
-                    <div class="text-center">
-                        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Plan de Estudio</h2>
-                        <span id="todo-total-time" class="text-xs font-mono text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-1 rounded">Total: 0 min</span>
-                    </div>
-                    <div class="w-10"></div> <!-- Spacer -->
-                </div>
-
-                <!-- Session Name Area -->
-                <div class="mb-6">
-                    <div class="flex items-center gap-2 mb-2 px-1">
-                        <i class="fa-solid fa-tag text-blue-500 text-xs"></i>
-                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">Nombre de la Misión</label>
-                    </div>
-                    <input type="text" id="session-name-input" placeholder="Ej: Preparación Examen IA..." 
-                           class="w-full bg-blue-500/5 dark:bg-white/5 border-2 border-dashed border-blue-500/20 dark:border-blue-400/20 rounded-2xl px-5 py-3 text-lg font-bold text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-all text-center">
-                </div>
-
-                <!-- Input Area -->
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="task-input" placeholder="Nueva tarea / Materia..." 
-                           class="flex-1 bg-white/50 dark:bg-black/20 border border-white/50 dark:border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-blue-500 dark:text-white transition-colors"
-                           onkeypress="if(event.key === 'Enter') addTask()">
-                    <button onclick="addTask()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
-                </div>
-
-                <!-- List Area -->
-                <div class="flex-1 overflow-y-auto pr-1">
-                    <div id="task-list" class="space-y-3 pb-4">
-                        <!-- Las tareas se inyectan aquí -->
-                    </div>
-                    
-                    <div id="empty-tasks" class="text-center py-10 text-gray-400 dark:text-gray-500">
-                        <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
-                        <p class="text-sm">Agrega tareas para organizar tu tiempo de vuelo.</p>
-                    </div>
-                </div>
-
-                <!-- Summary Footer -->
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
-                    <div class="flex justify-between items-center mb-4 text-sm">
-                        <span class="text-gray-500 dark:text-gray-400">Total asignado:</span>
-                        <span id="total-percent" class="font-bold text-gray-800 dark:text-white">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4 overflow-hidden">
-                        <div id="total-percent-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    
-                    <button onclick="confirmAndSaveItinerary()" id="btn-generate-ticket" disabled 
-                            class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-black dark:hover:bg-blue-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
-                        Confirmar y Generar Boucher
-                    </button>
-                    
-                    <button onclick="showBoardingPass()" class="w-full mt-3 text-xs font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                        Continuar sin guardar
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PANTALLA 2: BOUCHER / BOARDING PASS -->
-        <div id="screen-ticket" class="hidden-screen flex items-center justify-center bg-black/40 backdrop-blur-md p-4 h-full">
-            <div class="w-full max-w-lg glass-panel !bg-white/90 dark:!bg-gray-800/90 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-                <!-- Header -->
-                <div class="pass-header flex justify-between items-center p-6 !bg-blue-600 dark:!bg-blue-500 text-white">
-                    <div class="flex flex-col">
-                        <span class="font-bold tracking-widest uppercase text-[10px] opacity-70">Flyper Pass</span>
-                        <span class="font-black text-lg tracking-tight" id="ticket-session-name">Misión de Estudio</span>
-                    </div>
-                    <i class="fa-solid fa-earth-americas text-2xl opacity-50"></i>
-                </div>
-                
-                <!-- Body -->
-                <div class="p-8">
-                    <div class="flex justify-between items-center mb-8">
-                        <div class="text-center">
-                            <div class="text-4xl font-black text-gray-800 dark:text-white" id="ticket-origin">MAD</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mt-1">Salida</div>
-                        </div>
-                        
-                        <div class="flex-1 px-4 flex flex-col items-center">
-                            <i class="fa-solid fa-plane text-xl text-blue-500"></i>
-                            <div class="w-full h-px bg-gray-300 dark:bg-gray-600 my-2 relative">
-                                <div class="absolute w-2 h-2 rounded-full left-0 top-1/2 -translate-y-1/2 bg-blue-500"></div>
-                                <div class="absolute w-2 h-2 rounded-full right-0 top-1/2 -translate-y-1/2 bg-blue-500"></div>
-                            </div>
-                            <div class="text-xs font-bold text-blue-500" id="ticket-duration">2h 15m</div>
-                        </div>
-
-                        <div class="text-center">
-                            <div class="text-4xl font-black text-gray-800 dark:text-white" id="ticket-dest">LDN</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 uppercase mt-1">Llegada</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white/50 dark:bg-black/20 border border-gray-100 dark:border-white/5 p-4 rounded-2xl">
-                            <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Clase</div>
-                            <div class="font-bold text-gray-700 dark:text-gray-200">Business / Focus</div>
-                        </div>
-                        <div class="bg-white/50 dark:bg-black/20 border border-gray-100 dark:border-white/5 p-4 rounded-2xl">
-                            <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Arribo Estimado</div>
-                            <div class="flex flex-col">
-                                <span class="font-bold text-gray-700 dark:text-gray-200" id="ticket-arrival">--:--</span>
-                                <span class="text-[10px] text-gray-500" id="ticket-arrival-date">--/--</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer / Actions -->
-                <div class="p-6 bg-gray-50/50 dark:bg-black/20 border-t border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <button onclick="showScreen('screen-todo')" class="text-gray-400 font-bold hover:text-gray-600 dark:hover:text-gray-200 text-sm">Editar</button>
-                    <button onclick="startFlight()" class="text-white px-8 py-3 rounded-full font-black shadow-lg hover:scale-105 transition-transform flex items-center bg-blue-600 dark:bg-blue-500">
-                        Despegar <i class="fa-solid fa-plane-departure ml-2"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- PANTALLA 3: MAPA Y VUELO -->
-        <div id="screen-flight" class="hidden-screen h-full w-full relative overflow-hidden">
+        <div id="screen-flight" class="h-full w-full relative overflow-hidden">
             <div id="map"></div>
 
             <!-- STACK DE BOTONES (DERECHA) -->
@@ -1113,7 +656,7 @@
                 </button>
             </div>
 
-            <!-- MUSIC MENU (REUBICADO) -->
+            <!-- MUSIC MENU -->
             <div id="music-menu" class="music-menu task-panel glass-panel">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-gray-800 dark:text-white text-base">Atmósfera de Estudio (Radio)</h3>
@@ -1159,15 +702,15 @@
                 </div>
             </div>
 
-            <!-- FLIGHT TASK LIST (REUBICADO) -->
-                    <div id="flight-task-list" class="task-overlay-list task-panel glass-panel shadow-2xl">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex flex-col">
-                                <span class="text-[9px] font-black uppercase tracking-widest text-blue-500 opacity-70">Misión</span>
-                                <h3 class="font-bold text-gray-800 dark:text-white text-base leading-tight" id="flight-list-session-name">Plan de Vuelo</h3>
-                            </div>
-                            <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
+            <!-- FLIGHT TASK LIST -->
+            <div id="flight-task-list" class="task-overlay-list task-panel glass-panel shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-blue-500 opacity-70">Misión</span>
+                        <h3 class="font-bold text-gray-800 dark:text-white text-base leading-tight" id="flight-list-session-name">Plan de Vuelo</h3>
+                    </div>
+                    <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                </div>
                 <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
                     <div class="flex flex-col gap-2">
                         <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
@@ -1315,7 +858,7 @@
             <!-- FLYPER LOGO (BOTTOM-LEFT) -->
             <div class="absolute bottom-5 left-5 z-[95] pointer-events-none">
                 <div class="flyper-logo-map">
-                    <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+Cjxzdmcgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDE2NjcgMTg5NSIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxuczpzZXJpZj0iaHR0cDovL3d3dy5zZXJpZi5jb20vIiBzdHlsZT0iZmlsbC1ydWxlOmV2ZW5vZGQ7Y2xpcC1ydWxlOmV2ZW5vZGQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjI7Ij4KICAgIDxnIHRyYW5zZm9ybT0ibWF0cml4KDEsMCwwLDEsLTE2Ni42NTY2MjQsLTE3LjYzMTM0OSkiPgogICAgICAgIDxnIHRyYW5zZm9ybT0ibWF0cml4KDYuNDI2NTgyLDAsMCw2LjQyNjU4MiwtMTM0Ljg1NDMwMSwtMjQwLjg5MTY4OCkiPgogICAgICAgICAgICA8ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLjMwOTUsMCwwLDEuMzA5NSwtNDg2LjAxNTc4MSwtMTE0OC4wNjc3ODgpIj4KICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik00NzIuMDc1LDk5OS4wNDdDNDY3LjE5LDk5OC43MDEgNDYzLDk5Ny45ODggNDU5LjQyOSw5OTcuMDA2QzQ0OC41NjUsOTk0LjAyMSA0NDEuOTc2LDk4OC41MjcgNDM4LjAxMSw5ODIuNDA0QzQzMC44NjcsOTcxLjM3MyA0MzIuMTYzLDk1Ni41OSA0MzguMzM2LDk0NC4wOTNDNDQ0LjMwNiw5MzIuMDA3IDQ1NC42MjksOTIzLjA5IDQ2MC44NzYsOTIxLjEwOEM0NzIuMTg1LDkxNy41MiA0ODEuMDc1LDkxOC44MzIgNDg3Ljg4NCw5MjIuNTc1QzQ5Ny4yNDYsOTI3LjcyMiA1MDMuODQ1LDkzOC43OTEgNTA1LjM0OCw5NTQuOTI4QzUwNS43MTMsOTU4Ljg1OCA1MDUuNzkxLDk2My4xNTggNTA1LjYsOTY3Ljc1QzUwNi41MzYsOTY3LjU2NSA1MDcuNDg2LDk2Ny4zNzIgNTA4LjQ1Miw5NjcuMTdDNTQwLjk4Myw5NjAuMzYzIDU1MS44NDEsOTQxLjE5NiA1NTguNDAyLDkzMi4wMjlMNTY2LjcsOTIwLjQzNEw1ODkuODkxLDkzNy4wMzJMNTgxLjU5Miw5NDguNjI3QzU3Mi44MDcsOTYwLjkwMiA1NTcuODUzLDk4NS45NjkgNTE0LjI5Miw5OTUuMDg0QzUwOS44MDksOTk2LjAyMiA1MDUuNTc5LDk5Ni43ODYgNTAxLjU5LDk5Ny4zOTNDNDk4LjY0NCwxMDExLjI5NiA0OTQuMjI0LDEwMjYuMTM5IDQ4OC42ODMsMTA0MC42NUM0NzYuNzUxLDEwNzEuOTAzIDQ1OS42NzQsMTEwMS40OTkgNDQyLjQyNCwxMTE3LjI4Mkw0MzEuOTA0LDExMjYuOTA4TDQxMi42NTMsMTEwNS44NjhMNDIzLjE3MywxMDk2LjI0MkM0NDMuNzEzLDEwNzcuNDQ4IDQ2My4xMiwxMDM1LjQ1OSA0NzIuMDc1LDk5OS4wNDdaTTQ3Ni45MDcsOTcwLjc4NUM0NzcuNTM1LDk2My4wMjIgNDc3LjM0NSw5NTYuMjMzIDQ3NS43NzQsOTUxLjAzMUM0NzUuMzQsOTQ5LjU5NSA0NzQuOTk1LDk0OC4yOTEgNDc0LjA5LDk0Ny41MzFDNDczLjgwNCw5NDcuMjkxIDQ3My4zOSw5NDcuNTEzIDQ3Mi45MjksOTQ3LjU0OUM0NzIuMTM5LDk0Ny42MTIgNDcxLjMwMiw5NDcuNzc3IDQ3MC40MTEsOTQ4LjAyMUM0NjkuNTQ5LDk0OC45NTEgNDY1LjU5LDk1My4zMTIgNDYzLjkwNSw5NTYuNzI0QzQ2Mi4yNzMsOTYwLjAyOCA0NjAuMzE5LDk2My43MTkgNDYxLjg2Niw5NjYuNzU5QzQ2Mi41MDksOTY4LjAyNSA0NjQuMDY3LDk2OC41OTQgNDY2LjEwNCw5NjkuMjQ2QzQ2OC45ODgsOTcwLjE2OCA0NzIuNTU5LDk3MC42NjcgNDc2LjkwNyw5NzAuNzg1WiIgc3R5bGU9ImZpbGw6cmdiKDAsMTE5LDE4Mik7Ii8+CiAgICAgICAgICAgIDwvZz4KICAgICAgICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMDk1LDAsMCwxLjMwOTUsLTQ4Ni4wMTU3ODEsLTExNDguMDY3Nzg4KSI+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNNDgyLjgyNCwxMDUzLjc0NEw0NjguNjkxLDEwNTUuNjM0TDQ2NC45MSwxMDI3LjM2OEw0NzkuMDQzLDEwMjUuNDc3QzQ4Mi42MjgsMTAyNC45OTcgNDg3LjUxOSwxMDI1LjM0OCA0OTMuNTE0LDEwMjUuOTc0QzUwOS4zMjUsMTAyNy42MjcgNTM2LjYzOSwxMDI5LjQyNiA1NjguMTY4LDk5MC45NjFMNTc3LjIwNyw5NzkuOTMzTDU5OS4yNjMsOTk4LjAxMUw1OTAuMjI0LDEwMDkuMDM5QzU1My40NTgsMTA1My44OTMgNTIwLjM4LDEwNTYuNDE1IDQ5OC42NjEsMTA1NS4wNTFDNDkxLjczOSwxMDU0LjYxNiA0ODYuMzM4LDEwNTMuMjczIDQ4Mi44MjQsMTA1My43NDRaIiBzdHlsZT0iZmlsbDpyZ2IoMCwxMTksMTgyKTsiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+Cg==" alt="FLYPER Logo" loading="lazy">
+                    <img src="src/FLYPER_LOGO.svg" class="w-10 h-10 object-contain logo-blue" alt="Flyper Logo">
                 </div>
             </div>
         </div>
@@ -1398,138 +941,6 @@
             </div>
         </div>
 
-        <!-- MODAL ERROR / ADVERTENCIA (NUEVO) -->
-        <div id="error-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-gray-200 dark:border-gray-700">
-                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600 dark:text-red-400">
-                    <i class="fa-solid fa-circle-exclamation text-2xl"></i>
-                </div>
-                <h2 id="error-modal-title" class="text-xl font-bold text-gray-800 dark:text-white mb-2">¡Límite Excedido!</h2>
-                <p id="error-modal-msg" class="text-sm text-gray-500 dark:text-gray-400 mb-6">El tiempo total asignado no puede superar el 100%.</p>
-                
-                <button onclick="closeErrorModal()" class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-3 rounded-xl hover:opacity-90 transition">
-                    Entendido
-                </button>
-            </div>
-        </div>
-
-        <!-- TOAST NOTIFICATION -->
-        <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[1000] hidden transition-opacity duration-300 pointer-events-none">
-            <div class="glass-panel px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gray-200 dark:border-gray-700">
-                <i id="toast-icon" class="fa-solid fa-check-circle text-green-500"></i>
-                <span id="toast-msg" class="font-bold text-gray-800 dark:text-white text-sm">Notificación</span>
-            </div>
-        </div>
-
-        <!-- MODAL IMPORTAR VUELO -->
-        <div id="import-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity">
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-gray-700">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
-                        <i class="fa-solid fa-file-import text-2xl"></i>
-                    </div>
-                    <h2 class="text-2xl font-black text-gray-800 dark:text-white mb-1">Importar Plan de Vuelo</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Se ha detectado un itinerario compartido</p>
-                </div>
-
-                <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl mb-6 border border-gray-100 dark:border-gray-700">
-                    <div class="flex justify-between items-center mb-3">
-                        <div class="font-bold text-gray-800 dark:text-white text-lg" id="import-name">Nombre del Plan</div>
-                        <div class="text-xs font-mono bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-lg" id="import-duration">-- min</div>
-                    </div>
-                    <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                        <div class="flex items-center gap-2">
-                            <span id="import-origin" class="font-black text-gray-800 dark:text-gray-200">XXX</span>
-                            <i class="fa-solid fa-arrow-right text-xs"></i>
-                            <span id="import-dest" class="font-black text-gray-800 dark:text-gray-200">YYY</span>
-                        </div>
-                        <div id="import-task-count">0 tareas</div>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col gap-3">
-                    <button onclick="importFlyNow()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition transform hover:scale-[1.02]">
-                        <i class="fa-solid fa-plane-departure mr-2"></i> Volar Ahora
-                    </button>
-                    <div class="flex gap-3">
-                        <button onclick="importSave()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                            <i class="fa-solid fa-save mr-1"></i> Guardar
-                        </button>
-                        <button onclick="closeImportModal()" class="flex-1 bg-transparent border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-red-500 font-bold py-3 rounded-xl transition">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL ESTADÍSTICAS (NUEVO) -->
-        <div id="stats-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full max-h-[85vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                            <i class="fa-solid fa-chart-pie"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-black text-gray-800 dark:text-white">Estadísticas</h2>
-                            <p class="text-xs text-gray-500">Tu historial de piloto</p>
-                        </div>
-                    </div>
-                    <button onclick="closeStats()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                
-                <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-800" id="stats-content">
-                    <!-- Stats Injected via JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL LOGROS (ACHIEVEMENTS) -->
-        <div id="achievements-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
-                            <i class="fa-solid fa-trophy"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-black text-gray-800 dark:text-white">Trofeos y Logros</h2>
-                            <p class="text-xs text-gray-500" id="achievements-summary">Cargando...</p>
-                        </div>
-                    </div>
-                    <button onclick="closeAchievements()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                
-                <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-800">
-                    <div id="achievements-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Los logros se inyectan aquí -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODAL HANGAR (ITINERARIOS GUARDADOS) -->
-        <div id="hangar-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity">
-            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-xl font-black text-gray-800 dark:text-white">Mi Hangar</h2>
-                        <p class="text-xs text-gray-500">Tus itinerarios guardados localmente</p>
-                    </div>
-                    <button onclick="closeHangar()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                
-                <div id="hangar-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50 dark:bg-gray-900/20">
-                    <!-- Los itinerarios se inyectan aquí -->
-                </div>
-
-                <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Flyper hangar</p>
-                </div>
-            </div>
-        </div>
-
         <!-- MODAL ÉXITO FINAL (NUEVO) -->
         <div id="success-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity">
             <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center border border-gray-200 dark:border-gray-700">
@@ -1550,11 +961,18 @@
             </div>
         </div>
 
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[1000] hidden transition-opacity duration-300 pointer-events-none">
+            <div class="glass-panel px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-gray-200 dark:border-gray-700">
+                <i id="toast-icon" class="fa-solid fa-check-circle text-green-500"></i>
+                <span id="toast-msg" class="font-bold text-gray-800 dark:text-white text-sm">Notificación</span>
+            </div>
+        </div>
+
     </div>
 
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="src/airports.js"></script>
     <script src="src/achievements.js"></script>
     <script>
         // --- UTILS ---
@@ -1585,13 +1003,14 @@
             durationMs: 0,
             startTime: 0,
             sessionName: '',
-            tasks: [] // Array de objetos {id, title, percent, completed}
+            tasks: [] 
         };
 
         function toggleTheme() {
             const html = document.documentElement;
             isDarkMode = !isDarkMode;
             html.classList.toggle('dark', isDarkMode);
+            localStorage.theme = isDarkMode ? 'dark' : 'light';
             if (map) updateMapTiles();
         }
 
@@ -1616,166 +1035,29 @@
                 labelLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', tileOptions).addTo(map);
             }
         }
-
-        // --- DATA ---
-        // Los aeropuertos se cargan desde src/airports.js
-
-        // --- TASK LOGIC ---
-        function showTasksScreen() {
-            renderTasks();
-            showScreen('screen-todo');
-        }
-
-        function addTask() {
-            const input = document.getElementById('task-input');
-            const title = input.value.trim();
-            if (!title) return;
-
-            // Calcular porcentaje restante para asignar automáticamente
-            const currentTotal = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
-            const remaining = Math.max(0, 100 - currentTotal);
-            const newPercent = remaining > 0 ? (remaining > 20 ? 20 : remaining) : 0;
-
-            const newTask = {
-                id: Date.now().toString(),
-                title: title,
-                percent: newPercent,
-                completed: false
-            };
-            trip.tasks.push(newTask);
-            input.value = '';
-            renderTasks();
-        }
-
-        function removeTask(id) {
-            trip.tasks = trip.tasks.filter(t => t.id !== id);
-            renderTasks();
-        }
-
+        
         function showError(title, msg) {
-            document.getElementById('error-modal-title').innerText = title;
-            document.getElementById('error-modal-msg').innerText = msg;
-            document.getElementById('error-modal').classList.remove('hidden');
-        }
-
-        function closeErrorModal() {
-            document.getElementById('error-modal').classList.add('hidden');
+             showToast(title + ": " + msg, "error");
         }
 
         function updateTaskPercent(id, newPercent) {
             const task = trip.tasks.find(t => t.id === id);
             if (task) {
                 const val = parseInt(newPercent) || 0;
-                
-                // Calcular total si aplicamos este cambio
                 const otherTasksTotal = trip.tasks.filter(t => t.id !== id).reduce((sum, t) => sum + t.percent, 0);
                 
                 if (otherTasksTotal + val > 100) {
                     showError("Límite de Tiempo", "El tiempo total de las tareas no puede superar el 100% del vuelo. Ajusta otras tareas primero.");
-                    
-                    // Re-renderizar para resetear el valor del input al valor anterior guardado en el objeto
-                    if (document.getElementById('screen-todo').classList.contains('active-screen')) {
-                        renderTasks();
-                    } else {
-                        renderFlightTasks();
-                    }
+                    renderFlightTasks();
                     return;
                 }
 
                 task.percent = val;
-                // Update appropriate UI list based on screen
-                if (document.getElementById('screen-todo').classList.contains('active-screen')) {
-                    renderTasks();
-                } else if (document.getElementById('screen-flight').classList.contains('active-screen')) {
-                    renderFlightTasks();
-                }
+                renderFlightTasks();
             }
         }
 
-        function renderTasks() {
-            const list = document.getElementById('task-list');
-            const empty = document.getElementById('empty-tasks');
-            
-            list.innerHTML = '';
-            
-            if (trip.tasks.length === 0) {
-                empty.style.display = 'block';
-                document.getElementById('btn-generate-ticket').disabled = true;
-            } else {
-                empty.style.display = 'none';
-                document.getElementById('btn-generate-ticket').disabled = false;
-            }
-
-            // Calcular minutos totales del vuelo para mostrar referencia
-            const totalMinutes = Math.round(trip.durationMs / 60000);
-            document.getElementById('todo-total-time').innerText = `Vuelo: ${totalMinutes} min`;
-
-            let totalPercent = 0;
-
-            trip.tasks.forEach(task => {
-                totalPercent += task.percent;
-                const taskMin = Math.round((task.percent / 100) * totalMinutes);
-
-                const el = document.createElement('div');
-                el.className = 'task-card bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 p-3 rounded-xl shadow-sm flex items-center gap-3 select-none';
-                el.dataset.id = task.id;
-                
-                el.innerHTML = `
-                    <div class="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 handle">
-                        <i class="fa-solid fa-grip-vertical"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-semibold text-gray-800 dark:text-white text-sm">${escapeHTML(task.title)}</div>
-                        <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">${taskMin} min</div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input type="number" min="0" max="100" value="${task.percent}" 
-                            class="w-16 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded px-2 py-1 text-xs text-center focus:outline-none focus:border-blue-500 dark:text-white"
-                            onchange="updateTaskPercent('${task.id}', this.value)">
-                        <span class="text-xs text-gray-500">%</span>
-                        <button onclick="removeTask('${task.id}')" class="text-red-400 hover:text-red-600 ml-2">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                list.appendChild(el);
-            });
-
-            // Update footer stats
-            document.getElementById('total-percent').innerText = totalPercent + '%';
-            document.getElementById('total-percent-bar').style.width = Math.min(100, totalPercent) + '%';
-            
-            if (totalPercent > 100) {
-                document.getElementById('total-percent').classList.add('text-red-500');
-                document.getElementById('total-percent-bar').classList.add('bg-red-500');
-                document.getElementById('total-percent-bar').classList.remove('bg-blue-500');
-            } else {
-                document.getElementById('total-percent').classList.remove('text-red-500');
-                document.getElementById('total-percent-bar').classList.remove('bg-red-500');
-                document.getElementById('total-percent-bar').classList.add('bg-blue-500');
-            }
-        }
-
-        // Initialize Sortable
         document.addEventListener('DOMContentLoaded', () => {
-            const list = document.getElementById('task-list');
-            new Sortable(list, {
-                handle: '.handle',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: function (evt) {
-                    // Reorder array based on DOM
-                    const newOrder = [];
-                    list.querySelectorAll('.task-card').forEach(card => {
-                        const id = card.dataset.id;
-                        const task = trip.tasks.find(t => t.id === id);
-                        if(task) newOrder.push(task);
-                    });
-                    trip.tasks = newOrder;
-                }
-            });
-
-            // Initialize Sortable for flight task list
             const flightList = document.getElementById('flight-tasks-container');
             new Sortable(flightList, {
                 handle: '.flight-handle',
@@ -1789,9 +1071,17 @@
                         if(task) newOrder.push(task);
                     });
                     trip.tasks = newOrder;
-                    // Order affects updateActiveTaskHUD
                 }
             });
+            
+            // Check theme
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                isDarkMode = true;
+            } else {
+                document.documentElement.classList.remove('dark');
+                isDarkMode = false;
+            }
         });
 
         // --- FLIGHT TASK PANEL LOGIC ---
@@ -1801,7 +1091,6 @@
             const activeHUD = document.getElementById('active-task-hud');
             const isDesktop = window.innerWidth >= 1024;
             
-            // Close other menus ONLY if not on desktop
             if (!isDesktop) {
                 if (musicMenu) musicMenu.classList.remove('open');
                 if (activeHUD) activeHUD.classList.remove('open');
@@ -1818,7 +1107,6 @@
             const btn = document.getElementById('btn-active-task-toggle');
             const isDesktop = window.innerWidth >= 1024;
 
-            // Close other menus ONLY if not on desktop
             if (!isDesktop) {
                 if (taskList) taskList.classList.remove('open');
                 if (musicMenu) musicMenu.classList.remove('open');
@@ -1889,7 +1177,6 @@
 
             if (!title) return;
 
-            // Validar límite de 100%
             const currentTotal = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
             if (currentTotal + pct > 100) {
                 showError("Límite de Tiempo", "No puedes añadir esta tarea porque superaría el 100% del tiempo de vuelo.");
@@ -1933,7 +1220,6 @@
                     confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
                 }, 250);
 
-                // Play success sound
                 const sfx = document.getElementById('sfx-success');
                 if (sfx) {
                     sfx.currentTime = 0;
@@ -1968,7 +1254,6 @@
                 task.completed = !task.completed;
                 
                 if (task.completed) {
-                    // Trigger Confetti
                     confetti({
                         particleCount: 150,
                         spread: 70,
@@ -1976,7 +1261,6 @@
                         zIndex: 200
                     });
 
-                    // Play Success SFX
                     const sfx = document.getElementById('sfx-success');
                     if (sfx) {
                         sfx.currentTime = 0;
@@ -2030,15 +1314,12 @@
         function updateStatsOnFlightComplete(completedTrip, pauseUsed) {
             const stats = getStats();
             
-            // Basic increments
             stats.totalFlights++;
             stats.totalFlightTime += Math.round(completedTrip.durationMs / 60000);
             
-            // Airports
             if (!stats.airportsVisited.includes(completedTrip.origin.code)) stats.airportsVisited.push(completedTrip.origin.code);
             if (!stats.airportsVisited.includes(completedTrip.dest.code)) stats.airportsVisited.push(completedTrip.dest.code);
 
-            // Productivity
             const allTasksDone = completedTrip.tasks.length > 0 && completedTrip.tasks.every(t => t.completed);
             if (allTasksDone) stats.perfectFlights++;
             if (!pauseUsed) stats.flightsWithoutPause++;
@@ -2046,12 +1327,10 @@
             const flightMins = Math.round(completedTrip.durationMs / 60000);
             if (flightMins > stats.longestSingleFlight) stats.longestSingleFlight = flightMins;
 
-            // Schedule
             if (!stats.flightsByHour) stats.flightsByHour = {};
             const hour = new Date().getHours().toString();
             stats.flightsByHour[hour] = (stats.flightsByHour[hour] || 0) + 1;
 
-            // Streaks
             updateStreak(stats);
 
             saveStats(stats);
@@ -2062,7 +1341,7 @@
             const today = new Date().toDateString();
             const lastDate = stats.lastFlightDate ? new Date(stats.lastFlightDate).toDateString() : null;
 
-            if (today === lastDate) return; // Already flew today
+            if (today === lastDate) return; 
 
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
@@ -2080,20 +1359,12 @@
             stats.lastFlightDate = new Date().toISOString();
         }
 
-        function updateStatsForAction(type) {
-            const stats = getStats();
-            if (type === 'save') stats.savedItineraries++;
-            if (type === 'share') stats.sharedPlans++;
-            saveStats(stats);
-            checkAchievements(stats);
-        }
-
         function checkAchievements(stats) {
             const unlocked = getUnlockedAchievements();
             const newUnlocks = [];
 
             for (const key in ACHIEVEMENTS) {
-                if (unlocked[key]) continue; // Already unlocked
+                if (unlocked[key]) continue;
 
                 const achievement = ACHIEVEMENTS[key];
                 if (achievement.condition(stats)) {
@@ -2109,7 +1380,6 @@
         }
 
         function showAchievementUnlocked(achievement) {
-            // Play sound
             const sfx = document.getElementById('sfx-achievement');
             if (sfx) {
                 sfx.currentTime = 0;
@@ -2117,255 +1387,16 @@
             }
 
             showToast(`¡Logro Desbloqueado: ${achievement.name}!`, "success");
-            
-            // If modal is open, refresh it
-            if (!document.getElementById('achievements-modal').classList.contains('hidden')) {
-                renderAchievements();
-            }
-        }
-
-        function openAchievements() {
-            renderAchievements();
-            document.getElementById('achievements-modal').classList.remove('hidden');
-        }
-
-        function closeAchievements() {
-            document.getElementById('achievements-modal').classList.add('hidden');
-        }
-
-        function renderAchievements() {
-            const grid = document.getElementById('achievements-grid');
-            const unlocked = getUnlockedAchievements();
-            const stats = getStats();
-            grid.innerHTML = '';
-
-            const unlockedCount = Object.keys(unlocked).length;
-            const totalCount = Object.keys(ACHIEVEMENTS).length;
-            
-            document.getElementById('achievements-summary').innerText = 
-                `${unlockedCount}/${totalCount} desbloqueados • ${Math.floor(stats.totalFlightTime / 60)}h ${stats.totalFlightTime % 60}m vuelo total`;
-
-            // Nota sobre el tiempo
-            const note = document.createElement('div');
-            note.className = "col-span-full bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800 mb-2 flex items-start gap-2";
-            note.innerHTML = `
-                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-                <p class="text-xs text-blue-800 dark:text-blue-200">
-                    <strong>Importante:</strong> Las horas de vuelo y estadísticas solo se registran al 
-                    <span class="underline decoration-blue-500">aterrizar y completar el vuelo</span>. 
-                    Si abortas a mitad de camino, el progreso de esa sesión no se guardará.
-                </p>
-            `;
-            grid.appendChild(note);
-
-            for (const key in ACHIEVEMENTS) {
-                const ach = ACHIEVEMENTS[key];
-                const isUnlocked = !!unlocked[key];
-                const dateStr = isUnlocked ? new Date(unlocked[key]).toLocaleDateString() : '';
-                
-                // Progress calculation
-                const currentVal = ach.getValue ? ach.getValue(stats) : 0;
-                const targetVal = ach.target || 1;
-                const percent = Math.min(100, Math.max(0, (currentVal / targetVal) * 100));
-
-                const el = document.createElement('div');
-                el.className = `p-4 rounded-2xl border flex flex-col gap-2 transition-all relative overflow-hidden ${
-                    isUnlocked 
-                    ? 'bg-white dark:bg-gray-700 border-yellow-200 dark:border-yellow-900/50 shadow-sm' 
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 opacity-90'
-                }`;
-
-                el.innerHTML = `
-                    <div class="flex items-start gap-4 z-10">
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0 ${
-                            isUnlocked ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-200 text-gray-400 grayscale'
-                        }">
-                            ${ach.icon}
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-bold text-gray-800 dark:text-white text-sm flex justify-between">
-                                <span>${ach.name}</span>
-                                ${!isUnlocked ? `<span class="text-xs text-gray-400">${currentVal}/${targetVal}</span>` : ''}
-                            </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 leading-tight mb-1">${ach.description}</div>
-                            
-                            ${isUnlocked 
-                                ? `<div class="text-[10px] text-blue-500 font-bold mt-1"><i class="fa-solid fa-check"></i> Conseguido: ${dateStr}</div>` 
-                                : `
-                                    <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mt-2 overflow-hidden">
-                                        <div class="bg-blue-400 h-full rounded-full transition-all duration-500" style="width: ${percent}%"></div>
-                                    </div>
-                                    <div class="text-[9px] text-gray-400 text-right mt-0.5">${percent.toFixed(0)}%</div>
-                                `
-                            }
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(el);
-            }
-        }
-
-        // --- STATS MODAL LOGIC ---
-        function openStats() {
-            renderStats();
-            document.getElementById('stats-modal').classList.remove('hidden');
-        }
-
-        function closeStats() {
-            document.getElementById('stats-modal').classList.add('hidden');
-        }
-
-        function renderStats() {
-            const stats = getStats();
-            const container = document.getElementById('stats-content');
-            
-            // Calculos auxiliares
-            const totalHours = Math.floor(stats.totalFlightTime / 60);
-            const totalMins = stats.totalFlightTime % 60;
-            const successRate = stats.totalFlights > 0 
-                ? Math.round((stats.totalFlights / (stats.totalFlights + (stats.abortedFlights || 0))) * 100) 
-                : 0;
-
-            container.innerHTML = `
-                <!-- Main Stats Grid -->
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800/50 flex flex-col items-center justify-center text-center">
-                        <div class="text-3xl font-black text-blue-600 dark:text-blue-400 mb-1">${totalHours}h ${totalMins}m</div>
-                        <div class="text-xs text-blue-400 uppercase font-bold tracking-wider">Tiempo de Vuelo</div>
-                    </div>
-                    <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-2xl border border-orange-100 dark:border-orange-800/50 flex flex-col items-center justify-center text-center">
-                        <div class="text-3xl font-black text-orange-500 dark:text-orange-400 mb-1 flex items-center gap-2">
-                            ${stats.currentStreak} <i class="fa-solid fa-fire text-xl"></i>
-                        </div>
-                        <div class="text-xs text-orange-400 uppercase font-bold tracking-wider">Racha Actual</div>
-                    </div>
-                </div>
-
-                <!-- Secondary Stats Grid -->
-                <div class="grid grid-cols-3 gap-2 mb-6">
-                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl text-center">
-                        <i class="fa-solid fa-plane-arrival text-green-500 text-xl mb-2"></i>
-                        <div class="font-bold text-gray-800 dark:text-white text-lg">${stats.totalFlights}</div>
-                        <div class="text-[10px] text-gray-400 uppercase">Completados</div>
-                    </div>
-                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl text-center">
-                        <i class="fa-solid fa-plane-slash text-red-400 text-xl mb-2"></i>
-                        <div class="font-bold text-gray-800 dark:text-white text-lg">${stats.abortedFlights || 0}</div>
-                        <div class="text-[10px] text-gray-400 uppercase">Abortados</div>
-                    </div>
-                     <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl text-center">
-                        <i class="fa-solid fa-map-location-dot text-indigo-400 text-xl mb-2"></i>
-                        <div class="font-bold text-gray-800 dark:text-white text-lg">${stats.airportsVisited.length}</div>
-                        <div class="text-[10px] text-gray-400 uppercase">Aeropuertos</div>
-                    </div>
-                </div>
-
-                <!-- Detailed Rows -->
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Tasa de Éxito</span>
-                        <span class="font-bold text-gray-800 dark:text-white">${successRate}%</span>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Mejor Racha Histórica</span>
-                        <span class="font-bold text-gray-800 dark:text-white">${stats.longestStreak} días</span>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Vuelo más largo</span>
-                        <span class="font-bold text-gray-800 dark:text-white">${stats.longestSingleFlight} min</span>
-                    </div>
-                     <div class="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Vuelos Perfectos (100% tareas)</span>
-                        <span class="font-bold text-gray-800 dark:text-white">${stats.perfectFlights}</span>
-                    </div>
-                </div>
-            `;
         }
 
         // --- INIT & CORE LOGIC ---
         window.onload = () => { 
-            loadSelects(); 
-            checkUrlForPlan();
             if (restoreFlightState()) {
-                showScreen('screen-flight');
                 initMap();
+            } else {
+                window.location.href = 'plan.html';
             }
         };
-
-        let tomSelectOrigin, tomSelectDest;
-
-        function loadSelects() {
-            const s1 = document.getElementById('origin');
-            const s2 = document.getElementById('destination');
-            
-            // Ordenar: Primero por País, luego por Ciudad
-            const sorted = [...airports].sort((a,b) => {
-                if (a.country < b.country) return -1;
-                if (a.country > b.country) return 1;
-                return a.city.localeCompare(b.city);
-            });
-
-            // Agrupar por país
-            const groups = {};
-            sorted.forEach(ap => {
-                if (!groups[ap.country]) groups[ap.country] = [];
-                groups[ap.country].push(ap);
-            });
-
-            const buildOptions = () => {
-                let html = '<option value="" disabled selected>Buscar aeropuerto...</option>';
-                for (const [country, list] of Object.entries(groups)) {
-                    html += `<optgroup label="${country}">`;
-                    list.forEach(ap => {
-                        html += `<option value="${ap.code}">${ap.city} (${ap.code}) - ${ap.country}</option>`;
-                    });
-                    html += `</optgroup>`;
-                }
-                return html;
-            };
-
-            const optionsHTML = buildOptions();
-            s1.innerHTML = optionsHTML;
-            s2.innerHTML = optionsHTML;
-
-            // Inicializar Tom Select
-            const tsConfig = {
-                create: false,
-                sortField: { field: "text", direction: "asc" },
-                placeholder: "Escribe para buscar...",
-                render: {
-                    option: function(data, escape) {
-                        const parts = data.text.split(' - ');
-                        return '<div>' +
-                                '<span class="font-bold block">' + escape(parts[0]) + '</span>' +
-                                '<span class="text-xs text-gray-500 block">' + escape(parts[1] || '') + '</span>' +
-                            '</div>';
-                    },
-                    item: function(data, escape) {
-                        return '<div>' + escape(data.text) + '</div>';
-                    }
-                },
-                onChange: function() {
-                    updatePreview();
-                }
-            };
-
-            tomSelectOrigin = new TomSelect('#origin', tsConfig);
-            tomSelectDest = new TomSelect('#destination', tsConfig);
-        }
-
-        function getAirport(code) { return airports.find(a => a.code === code); }
-
-        function calculateDist(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
 
         function formatTime(mins) {
             const h = Math.floor(mins / 60);
@@ -2373,123 +1404,8 @@
             return h > 0 ? `${h}h ${m}m` : `${m} min`;
         }
 
-        function updatePreview() {
-            const oVal = document.getElementById('origin').value;
-            const dVal = document.getElementById('destination').value;
-            const btn = document.getElementById('btn-goto-tasks');
-            const box = document.getElementById('preview-box');
-
-            if (oVal && dVal && oVal !== dVal) {
-                const origin = getAirport(oVal);
-                const dest = getAirport(dVal);
-                const dist = calculateDist(origin.lat, origin.lon, dest.lat, dest.lon);
-                const timeHrs = dist / 850; 
-                const totalMins = Math.round(timeHrs * 60) + 15;
-
-                trip.origin = origin;
-                trip.dest = dest;
-                trip.distance = dist;
-                trip.durationMs = totalMins * 60 * 1000;
-
-                document.getElementById('preview-time').innerText = formatTime(totalMins);
-                document.getElementById('preview-dist').innerText = Math.round(dist) + " km";
-                box.classList.remove('hidden');
-                btn.disabled = false;
-            } else {
-                box.classList.add('hidden');
-                btn.disabled = true;
-            }
-        }
-
-        function showScreen(id) {
-            document.querySelectorAll('.active-screen').forEach(el => {
-                el.classList.remove('active-screen');
-                el.classList.add('hidden-screen');
-            });
-            const target = document.getElementById(id);
-            target.classList.remove('hidden-screen');
-            target.classList.add('active-screen');
-        }
-
-        function showBoardingPass() {
-            // Capture session name
-            const sessionInput = document.getElementById('session-name-input');
-            trip.sessionName = sessionInput.value.trim() || "Misión de Estudio";
-            document.getElementById('ticket-session-name').innerText = trip.sessionName;
-
-            document.getElementById('ticket-origin').innerText = escapeHTML(trip.origin.code);
-            document.getElementById('ticket-dest').innerText = escapeHTML(trip.dest.code);
-            document.getElementById('ticket-duration').innerText = document.getElementById('preview-time').innerText;
-            
-            // Calculate ETA
-            const etaDate = new Date(Date.now() + trip.durationMs);
-            const etaTime = etaDate.getHours().toString().padStart(2, '0') + ":" + etaDate.getMinutes().toString().padStart(2, '0');
-            const etaDateStr = etaDate.getDate().toString().padStart(2, '0') + "/" + (etaDate.getMonth() + 1).toString().padStart(2, '0');
-            
-            const ticketArrival = document.getElementById('ticket-arrival');
-            if (ticketArrival) ticketArrival.innerText = etaTime;
-            const ticketArrivalDate = document.getElementById('ticket-arrival-date');
-            if (ticketArrivalDate) ticketArrivalDate.innerText = etaDateStr;
-
-            showScreen('screen-ticket');
-        }
-
-        function startFlight() {
-            // Update session name displays
-            const listTitle = document.getElementById('flight-list-session-name');
-            if (listTitle) listTitle.innerText = trip.sessionName;
-
-            // Actualizar datos del Boucher en el mapa
-            document.getElementById('boucher-origin').innerText = trip.origin.code;
-            document.getElementById('boucher-dest').innerText = trip.dest.code;
-            document.getElementById('boucher-duration').innerText = formatTime(Math.round(trip.durationMs / 60000));
-
-            // Set Start Time and Calculate Arrival
-            trip.startTime = Date.now();
-            usedPause = false;
-            totalPausedTime = 0;
-            const arrivalDate = new Date(trip.startTime + trip.durationMs);
-            const arrivalTime = arrivalDate.getHours().toString().padStart(2, '0') + ":" + arrivalDate.getMinutes().toString().padStart(2, '0');
-            const arrivalDateStr = arrivalDate.getDate().toString().padStart(2, '0') + "/" + (arrivalDate.getMonth() + 1).toString().padStart(2, '0');
-            const arrivalFullDate = arrivalDateStr + "/" + arrivalDate.getFullYear().toString().substr(-2);
-            
-            const boucherArrival = document.getElementById('boucher-arrival');
-            if (boucherArrival) boucherArrival.innerText = arrivalTime;
-            const boucherArrivalDate = document.getElementById('boucher-arrival-date');
-            if (boucherArrivalDate) boucherArrivalDate.innerText = arrivalDateStr;
-            
-            const hudArrival = document.getElementById('hud-arrival');
-            if (hudArrival) hudArrival.innerText = arrivalTime;
-            const hudArrivalDate = document.getElementById('hud-arrival-date');
-            if (hudArrivalDate) hudArrivalDate.innerText = arrivalFullDate;
-
-            // Save initial state
-            saveFlightState();
-            lastSaveTime = Date.now();
-
-            // Logic to handle desktop/mobile differences
-            const isDesktop = window.innerWidth >= 1024;
-            const btn = document.getElementById('btn-active-task-toggle');
-            const hud = document.getElementById('active-task-hud');
-
-            if (isDesktop) {
-                // On desktop, show both HUDs by default
-                if (hud) hud.classList.add('open');
-                const taskList = document.getElementById('flight-task-list');
-                if (taskList) taskList.classList.add('open');
-                if (btn) btn.classList.add('button-glow');
-            } else {
-                // On mobile, keep HUD closed and glow the button
-                if (btn) btn.classList.add('button-glow');
-            }
-
-            showScreen('screen-flight');
-            initMap();
-        }
-
         // --- NEW CANCELLATION LOGIC ---
         function cancelFlight() {
-            // Mostrar modal de confirmación en lugar de cancelar inmediatamente
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
 
@@ -2498,7 +1414,6 @@
         }
 
         function executeCancellation() {
-            // Ejecutar la lógica real de cancelación
             clearFlightState();
             document.getElementById('confirm-modal').classList.add('hidden');
             document.getElementById('tasks-done-modal').classList.add('hidden');
@@ -2509,7 +1424,6 @@
             const now = Date.now();
             const elapsedMs = (now - trip.startTime) - totalPausedTime;
             
-            // Calculate stats
             const elapsedMins = Math.floor(elapsedMs / 60000);
             const elapsedHrs = Math.floor(elapsedMins / 60);
             const remainingMins = elapsedMins % 60;
@@ -2521,12 +1435,10 @@
             const completedTasks = trip.tasks.filter(t => t.completed).length;
             const taskPct = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
-            // Diferenciar entre Abortar, Aterrizar o Tareas Completadas
             const isArrival = progress >= 0.99;
             const allTasksDone = totalTasks > 0 && completedTasks === totalTasks;
             const titleEl = document.getElementById('summary-title');
             
-            // Increment Aborted Stats ONLY if not successful landing
             if (!isArrival) {
                 incrementAbortedFlights();
             }
@@ -2541,26 +1453,20 @@
                 }
             }
 
-            // Update modal UI
             document.getElementById('summary-time').innerText = `${elapsedHrs > 0 ? elapsedHrs + 'h ' : ''}${remainingMins}m`;
             document.getElementById('summary-dist').innerText = `${distCovered} km`;
             document.getElementById('summary-task-count').innerText = `${completedTasks}/${totalTasks}`;
             document.getElementById('summary-task-bar').style.width = `${taskPct}%`;
 
-            // --- MEJORA: Cambio de pantalla inmediato ---
-            // Limpiamos el mapa y volvemos a la pantalla 1 de fondo
             if (map) { 
                 map.remove(); 
                 map = null; 
                 tileLayer = null; 
                 labelLayer = null; 
             }
-            showScreen('screen-planner');
 
-            // Show modal
             document.getElementById('summary-modal').classList.remove('hidden');
 
-            // Play success sound
             const sfx = document.getElementById('sfx-success');
             if (sfx) {
                 sfx.currentTime = 0;
@@ -2569,31 +1475,7 @@
         }
 
         function resetApp() {
-            clearFlightState();
-            stopMusic(); 
-            if (timerInterval) clearInterval(timerInterval);
-            if (pauseInterval) clearInterval(pauseInterval);
-            isPaused = false;
-            totalPausedTime = 0;
-            document.getElementById('pause-overlay').classList.add('hidden');
-            if (map) { map.remove(); map = null; tileLayer = null; labelLayer = null; }
-            
-            // Close all modals
-            document.getElementById('summary-modal').classList.add('hidden');
-            document.getElementById('confirm-modal').classList.add('hidden');
-            document.getElementById('success-modal').classList.add('hidden');
-            document.getElementById('tasks-done-modal').classList.add('hidden');
-
-            document.getElementById('origin').value = "";
-            document.getElementById('destination').value = "";
-            document.getElementById('btn-goto-tasks').disabled = true;
-            document.getElementById('preview-box').classList.add('hidden');
-            document.getElementById('btn-finish').classList.add('hidden');
-            
-            // Reset trip data
-            trip.tasks = [];
-            
-            showScreen('screen-planner');
+            window.location.href = 'plan.html';
         }
 
         // --- MUSIC LOGIC ---
@@ -2603,7 +1485,6 @@
             const activeHUD = document.getElementById('active-task-hud');
             const isDesktop = window.innerWidth >= 1024;
 
-            // Close other menus ONLY if not on desktop
             if (!isDesktop) {
                 if (taskList) taskList.classList.remove('open');
                 if (activeHUD) activeHUD.classList.remove('open');
@@ -2659,7 +1540,6 @@
         function saveFlightState() {
             if (!trip.startTime) return;
             const now = Date.now();
-            // Guardar el tiempo efectivo (restando pausas)
             const elapsed = (now - trip.startTime) - totalPausedTime;
             
             const state = {
@@ -2680,26 +1560,19 @@
 
             try {
                 const state = JSON.parse(saved);
-                // Validar si el estado tiene sentido (ej: tiene origen/destino)
                 if (!state.trip || !state.trip.origin || !state.trip.dest) {
                     clearFlightState();
                     return false;
                 }
 
-                // Restaurar trip
                 trip = state.trip;
                 
-                // Recalcular startTime para que el tiempo transcurrido sea el mismo que cuando se cerró
-                // "Siga donde se quedó" implica pausar el tiempo.
+                // If restore logic needs to account for time elapsed since page load or pause, 
+                // we treat the reload as a continuation.
+                // However, user might have just refreshed.
+                // state.elapsed is the time FLOWN.
                 trip.startTime = Date.now() - state.elapsed;
 
-                // Restaurar UI básica
-                if(tomSelectOrigin) tomSelectOrigin.setValue(trip.origin.code, true);
-                if(tomSelectDest) tomSelectDest.setValue(trip.dest.code, true);
-                document.getElementById('session-name-input').value = trip.sessionName;
-                document.getElementById('ticket-session-name').innerText = trip.sessionName;
-                
-                // Update displays like startFlight does
                 updateFlightDisplays(); 
 
                 return true;
@@ -2711,7 +1584,6 @@
         }
 
         function updateFlightDisplays() {
-            // Helper to update text elements same as startFlight
             const listTitle = document.getElementById('flight-list-session-name');
             if (listTitle) listTitle.innerText = trip.sessionName;
 
@@ -2733,139 +1605,19 @@
             if (hudArrival) hudArrival.innerText = arrivalTime;
             const hudArrivalDate = document.getElementById('hud-arrival-date');
             if (hudArrivalDate) hudArrivalDate.innerText = arrivalFullDate;
-        }
-
-        // --- HANGAR & LOCAL STORAGE LOGIC ---
-        function confirmAndSaveItinerary() {
-            saveCurrentItinerary();
-            showBoardingPass();
-        }
-
-        function saveCurrentItinerary() {
-            const sessionInput = document.getElementById('session-name-input');
-            const sessionName = sessionInput.value.trim() || "Misión de Estudio";
             
-            if (!trip.origin || !trip.dest) {
-                showError("Plan incompleto", "Debes seleccionar origen y destino antes de guardar.");
-                return;
-            }
+            // Re-apply layout for desktop/mobile
+            const isDesktop = window.innerWidth >= 1024;
+            const btn = document.getElementById('btn-active-task-toggle');
+            const hud = document.getElementById('active-task-hud');
+            const taskList = document.getElementById('flight-task-list');
 
-            const itinerary = {
-                id: Date.now(),
-                name: sessionName,
-                origin: trip.origin,
-                dest: trip.dest,
-                tasks: trip.tasks,
-                durationMs: trip.durationMs,
-                distance: trip.distance,
-                date: new Date().toLocaleDateString()
-            };
-
-            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            history.unshift(itinerary); // Add to beginning
-            localStorage.setItem('flyper_hangar', JSON.stringify(history));
-            updateStatsForAction('save');
-
-            // Visual Feedback
-            const btn = event.currentTarget;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Guardado!';
-            btn.classList.replace('text-blue-600', 'text-green-600');
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.classList.replace('text-green-600', 'text-blue-600');
-            }, 2000);
-        }
-
-        function openHangar() {
-            renderHangarList();
-            document.getElementById('hangar-modal').classList.remove('hidden');
-        }
-
-        function closeHangar() {
-            document.getElementById('hangar-modal').classList.add('hidden');
-        }
-
-        function renderHangarList() {
-            const list = document.getElementById('hangar-list');
-            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            
-            list.innerHTML = '';
-
-            if (history.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-10 opacity-40">
-                        <i class="fa-solid fa-plane-slash text-4xl mb-3"></i>
-                        <p class="text-sm">El hangar está vacío.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            history.forEach(item => {
-                const el = document.createElement('div');
-                el.className = "bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex justify-between items-center gap-4 hover:border-blue-400 transition-colors cursor-pointer group";
-                el.onclick = (e) => {
-                    if (e.target.closest('.btn-action')) return;
-                    loadItinerary(item.id);
-                };
-
-                el.innerHTML = `
-                    <div class="flex-1">
-                        <div class="text-xs text-blue-500 font-bold uppercase tracking-tighter mb-1">${item.date}</div>
-                        <div class="font-bold text-gray-800 dark:text-white leading-tight mb-1">${escapeHTML(item.name)}</div>
-                        <div class="text-[10px] text-gray-500 flex items-center gap-1">
-                            ${escapeHTML(item.origin.code)} <i class="fa-solid fa-arrow-right text-[8px]"></i> ${escapeHTML(item.dest.code)} 
-                            • ${item.tasks.length} tareas
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <button class="btn-action text-gray-300 hover:text-blue-500 p-2 transition-colors" title="Compartir" onclick="shareItinerary(${item.id})">
-                            <i class="fa-solid fa-share-nodes"></i>
-                        </button>
-                        <button class="btn-action text-gray-300 hover:text-red-500 p-2 transition-colors" title="Eliminar" onclick="deleteItinerary(${item.id})">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-500 transition-colors ml-1"></i>
-                    </div>
-                `;
-                list.appendChild(el);
-            });
-        }
-
-        // --- SHARING LOGIC ---
-        function shareItinerary(id) {
-            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            const item = history.find(i => i.id === id);
-            if (!item) return;
-
-            // Compact structure
-            const shareable = {
-                n: item.name,
-                o: item.origin.code, // Only save code
-                d: item.dest.code,
-                t: item.durationMs,
-                tasks: item.tasks.map(t => ({
-                    n: t.title,
-                    p: t.percent
-                }))
-            };
-
-            try {
-                const json = JSON.stringify(shareable);
-                const encoded = btoa(unescape(encodeURIComponent(json)));
-                const url = window.location.origin + window.location.pathname + "?plan=" + encoded;
-
-                navigator.clipboard.writeText(url).then(() => {
-                    updateStatsForAction('share');
-                    showToast("¡Link copiado al portapapeles!", "success");
-                }).catch(err => {
-                    console.error('Error copying link: ', err);
-                    showToast("Error al copiar link", "error");
-                });
-            } catch (e) {
-                console.error("Encoding error:", e);
-                showToast("Error al generar el link", "error");
+            if (isDesktop) {
+                if (hud && trip.tasks.length > 0) hud.classList.add('open');
+                if (taskList) taskList.classList.add('open');
+                if (btn) btn.classList.add('button-glow');
+            } else {
+                if (btn) btn.classList.add('button-glow');
             }
         }
 
@@ -2888,164 +1640,9 @@
                 toast.classList.add('opacity-0');
                 setTimeout(() => {
                     toast.classList.add('hidden');
-                    toast.classList.remove('opacity-0'); // Reset for next time
+                    toast.classList.remove('opacity-0'); 
                 }, 300);
             }, 3000);
-        }
-
-        // --- IMPORT LOGIC ---
-        let pendingImport = null;
-
-        function checkUrlForPlan() {
-            const params = new URLSearchParams(window.location.search);
-            const encoded = params.get('plan');
-
-            if (encoded) {
-                try {
-                    const json = decodeURIComponent(escape(atob(encoded)));
-                    const data = JSON.parse(json);
-                    validateAndPrepareImport(data);
-                    
-                    // Clean URL
-                    const newUrl = window.location.pathname;
-                    window.history.replaceState({}, document.title, newUrl);
-                } catch (e) {
-                    console.error("Decoding error:", e);
-                    showToast("Link de vuelo inválido", "error");
-                }
-            }
-        }
-
-        function validateAndPrepareImport(data) {
-            // Basic validation
-            if (!data.n || !data.o || !data.d || !data.tasks) {
-                showToast("Datos del plan corruptos", "error");
-                return;
-            }
-
-            const originAp = getAirport(data.o);
-            const destAp = getAirport(data.d);
-
-            if (!originAp || !destAp) {
-                showToast("Aeropuerto desconocido en el plan", "error");
-                return;
-            }
-
-            // Reconstruction
-            pendingImport = {
-                name: data.n,
-                origin: originAp,
-                dest: destAp,
-                durationMs: data.t || 0, // Fallback, will be recalculated if needed or used
-                tasks: data.tasks.map((t, idx) => ({
-                    id: Date.now().toString() + idx,
-                    title: t.n,
-                    percent: t.p,
-                    completed: false
-                }))
-            };
-
-            // Recalculate duration/distance if missing or just to be safe? 
-            // Better to recalculate distance, but duration might be custom.
-            // If duration is provided in data.t, we use it.
-            // However, calculateDist is available.
-            const dist = calculateDist(originAp.lat, originAp.lon, destAp.lat, destAp.lon);
-            pendingImport.distance = dist;
-            if (!pendingImport.durationMs) {
-                const timeHrs = dist / 850; 
-                pendingImport.durationMs = (Math.round(timeHrs * 60) + 15) * 60 * 1000;
-            }
-
-            // Populate Modal
-            document.getElementById('import-name').innerText = pendingImport.name;
-            document.getElementById('import-duration').innerText = formatTime(Math.round(pendingImport.durationMs / 60000));
-            document.getElementById('import-origin').innerText = pendingImport.origin.code;
-            document.getElementById('import-dest').innerText = pendingImport.dest.code;
-            document.getElementById('import-task-count').innerText = pendingImport.tasks.length + " tareas";
-
-            document.getElementById('import-modal').classList.remove('hidden');
-        }
-
-        function closeImportModal() {
-            document.getElementById('import-modal').classList.add('hidden');
-            pendingImport = null;
-        }
-
-        function importFlyNow() {
-            if (!pendingImport) return;
-            
-            trip = {
-                ...pendingImport,
-                startTime: 0,
-                sessionName: pendingImport.name
-            };
-            
-            // Sync UI
-            if(tomSelectOrigin) tomSelectOrigin.setValue(trip.origin.code, true);
-            if(tomSelectDest) tomSelectDest.setValue(trip.dest.code, true);
-            document.getElementById('session-name-input').value = trip.sessionName || trip.name;
-            
-            updatePreview(); // To refresh UI boxes
-            showTasksScreen();
-            
-            closeImportModal();
-            showToast("Plan importado correctamente");
-        }
-
-        function importSave() {
-            if (!pendingImport) return;
-
-            const itinerary = {
-                id: Date.now(),
-                name: pendingImport.name,
-                origin: pendingImport.origin,
-                dest: pendingImport.dest,
-                tasks: pendingImport.tasks,
-                durationMs: pendingImport.durationMs,
-                distance: pendingImport.distance,
-                date: new Date().toLocaleDateString()
-            };
-
-            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            history.unshift(itinerary);
-            localStorage.setItem('flyper_hangar', JSON.stringify(history));
-            
-            closeImportModal();
-            showToast("Plan guardado en el Hangar");
-            openHangar(); // Show user where it went
-        }
-
-        function deleteItinerary(id) {
-            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            history = history.filter(item => item.id !== id);
-            localStorage.setItem('flyper_hangar', JSON.stringify(history));
-            renderHangarList();
-        }
-
-        function loadItinerary(id) {
-            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            const item = history.find(i => i.id === id);
-            
-            if (!item) return;
-
-            // Load data into trip object
-            trip.origin = item.origin;
-            trip.dest = item.dest;
-            trip.tasks = [...item.tasks];
-            trip.durationMs = item.durationMs;
-            trip.distance = item.distance;
-            trip.sessionName = item.name;
-
-            // Sync UI selects (manual set because TomSelect is active)
-            if (tomSelectOrigin) tomSelectOrigin.setValue(item.origin.code, true);
-            if (tomSelectDest) tomSelectDest.setValue(item.dest.code, true);
-            
-            // Sync Session Name Input
-            document.getElementById('session-name-input').value = item.name;
-
-            closeHangar();
-            updatePreview();
-            showTasksScreen();
         }
 
         // --- PAUSE LOGIC ---
@@ -3062,7 +1659,6 @@
             const activeHUD = document.getElementById('active-task-hud');
             const isDesktop = window.innerWidth >= 1024;
             
-            // Close other menus ONLY if not on desktop
             if (!isDesktop) {
                 if (taskList) taskList.classList.remove('open');
                 if (musicMenu) musicMenu.classList.remove('open');
@@ -3075,16 +1671,15 @@
         function startPause(minutes) {
             isPaused = true;
             usedPause = true;
-            togglePauseMenu(); // Close menu
+            togglePauseMenu(); 
             
-            // Stop flight timer
             clearInterval(timerInterval);
             
             pauseStartTime = Date.now();
             pauseEndTime = Date.now() + minutes * 60000;
             
             document.getElementById('pause-overlay').classList.remove('hidden');
-            updatePauseLoop(); // Run once immediately
+            updatePauseLoop(); 
             pauseInterval = setInterval(updatePauseLoop, 1000);
         }
 
@@ -3093,7 +1688,6 @@
             const remaining = Math.max(0, pauseEndTime - now);
             
             if (remaining <= 0) {
-                // Play alarm sound to signal end of break
                 const sfx = document.getElementById('sfx-overtime');
                 if (sfx) {
                     sfx.currentTime = 0;
@@ -3119,7 +1713,6 @@
             isPaused = false;
             document.getElementById('pause-overlay').classList.add('hidden');
             
-            // Restart flight loop
             timerInterval = setInterval(loopFlight, 1000);
         }
 
@@ -3157,7 +1750,7 @@
                 });
                 planeMarker = L.marker(oLatLon, { icon: planeIcon }).addTo(map);
 
-                renderFlightTasks(); // Prepare list
+                renderFlightTasks(); 
                 timerInterval = setInterval(loopFlight, 1000);
             }, 300);
         }
@@ -3173,7 +1766,6 @@
                 finishFlight();
             }
 
-            // HUD Data
             const remaining = Math.max(0, trip.durationMs - elapsed);
             document.getElementById('hud-timer').innerText = new Date(remaining).toISOString().substr(11, 8);
             document.getElementById('hud-pct').innerText = Math.floor(progress * 100) + "%";
@@ -3182,7 +1774,6 @@
             const spd = progress >= 1 ? 0 : 850 + Math.floor(Math.random() * 20 - 10);
             document.getElementById('hud-speed').innerText = spd;
 
-            // Map Movement
             const lat = trip.origin.lat + (trip.dest.lat - trip.origin.lat) * progress;
             const lon = trip.origin.lon + (trip.dest.lon - trip.origin.lon) * progress;
             planeMarker.setLatLng([lat, lon]);
@@ -3193,13 +1784,11 @@
             const icon = document.querySelector('.plane-icon');
             if(icon) icon.style.transform = `rotate(${angleDeg}deg)`; 
 
-            // Save state periodically (every 10 seconds)
             if (now - lastSaveTime > 10000) {
                 saveFlightState();
                 lastSaveTime = now;
             }
 
-            // Active Task Logic
             updateActiveTaskHUD(progress);
         }
 
@@ -3215,18 +1804,14 @@
                 if (btn) btn.style.display = 'flex';
             }
 
-            // MODIFIED: Select the first incomplete task
             let currentTask = trip.tasks.find(t => !t.completed);
             
-            // If all tasks are completed, hide the button
             if (!currentTask) {
                 if (btn) btn.style.display = 'none';
                 hud.classList.remove('open');
                 return;
             }
 
-            // Find the schedule time window for this specific task
-            // to display the progress bar correctly relative to its allocated time
             let accumulated = 0;
             let taskStart = 0;
             let taskEnd = 0;
@@ -3245,10 +1830,8 @@
 
             document.getElementById('active-task-title').innerText = currentTask.title;
             
-            // Calculate local progress
             const taskDuration = taskEnd - taskStart;
             
-            // Handle edge case of 0% duration (though unlikely)
             if (taskDuration <= 0) {
                  document.getElementById('active-task-bar').style.width = '100%';
                  document.getElementById('active-task-time').innerText = "0m restantes";
@@ -3257,9 +1840,6 @@
 
             let localProgress = (globalProgress - taskStart) / taskDuration;
             
-            // Clamp progress:
-            // If we are ahead of schedule (early), bar is empty.
-            // If we are behind schedule (late), bar is full.
             if (localProgress < 0) localProgress = 0;
             if (localProgress > 1) localProgress = 1;
 
@@ -3267,11 +1847,9 @@
             document.getElementById('active-task-bar').style.width = pct + '%';
             document.getElementById('active-task-pct').innerText = pct + '%';
             
-            // Check if time is up for THIS task
             if (localProgress >= 1) {
                 if (!hud.classList.contains('task-overtime')) {
                     hud.classList.add('task-overtime');
-                    // Play ringring sound
                     const sfx = document.getElementById('sfx-overtime');
                     if (sfx) {
                         sfx.currentTime = 0;
@@ -3282,7 +1860,6 @@
                 hud.classList.remove('task-overtime');
             }
 
-            // Time remaining
             const taskTotalMs = trip.durationMs * taskDuration;
             const taskElapsedMs = taskTotalMs * localProgress;
             const taskRemainingMs = taskTotalMs - taskElapsedMs;
@@ -3299,12 +1876,10 @@
             let currentTask = trip.tasks.find(t => !t.completed);
             if (currentTask) {
                 toggleTaskComplete(currentTask.id);
-                // The loop will automatically move to next task
             }
         }
 
         function finishFlight() {
-            // Update Stats Logic
             updateStatsOnFlightComplete(trip, usedPause);
 
             clearFlightState();
@@ -3312,11 +1887,9 @@
             isPaused = false;
             document.getElementById('pause-overlay').classList.add('hidden');
             
-            // En lugar de mostrar un botón pequeño, disparamos el resumen automáticamente
             document.getElementById('hud-timer').innerText = "LLEGADA";
             stopMusic(); 
             
-            // Lanzamos el resumen con una pequeña demora para que se sienta el aterrizaje
             setTimeout(() => {
                 executeCancellation();
             }, 1000);
