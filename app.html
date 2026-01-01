@@ -572,6 +572,17 @@
             100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
         }
 
+        /* OCULTAR UI PARA MODALES */
+        .hide-ui .right-button-stack,
+        .hide-ui .active-task-menu,
+        .hide-ui .task-panel,
+        .hide-ui .boucher-peek,
+        .hide-ui .flyper-logo-map,
+        .hide-ui div.absolute.top-0,
+        .hide-ui div.absolute.bottom-8 {
+            display: none !important;
+        }
+
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
@@ -713,19 +724,12 @@
                 </div>
                 <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
                     <div class="flex flex-col gap-2">
-                        <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
-                            class="w-full bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white">
-                        <div class="flex gap-2 items-center">
-                            <div class="flex-1 flex items-center gap-2 bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5">
-                                <span class="text-[10px] text-gray-400 font-bold uppercase">Tiempo:</span>
-                                <input type="number" id="flight-task-percent" value="10" min="1" max="100" 
-                                    class="w-full bg-transparent outline-none text-xs dark:text-white">
-                                <span class="text-xs text-gray-400">%</span>
-                            </div>
-                            <button onclick="addTaskInFlight()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-colors">
-                                <i class="fa-solid fa-plus mr-1"></i> Añadir
-                            </button>
-                        </div>
+                        <input type="text" id="flight-task-input" placeholder="Nombre del bloque..." 
+                            class="w-full bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white mb-1">
+                        
+                        <button onclick="addTaskInFlight()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-stopwatch"></i> Agregar pomodoro
+                        </button>
                     </div>
                 </div>
                 <div id="flight-tasks-container" class="space-y-2"></div>
@@ -747,6 +751,15 @@
                     <button onclick="startPause(30)" class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg text-sm transition">30m</button>
                 </div>
             </div>
+
+            <!-- PAUSE OVERLAY (Remaining html...) -->
+            <!-- ... -->
+            
+            <!-- SCRIPTS -->
+            <!-- ... -->
+            <!-- Need to inject JS updates inside existing script block logic, but 'replace' tool works on text blocks. -->
+            <!-- I will replace the JS functions inside the script tag by targeting them via context -->
+
 
             <!-- PAUSE OVERLAY -->
             <div id="pause-overlay" class="hidden absolute inset-0 z-[2000] bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-white">
@@ -976,6 +989,14 @@
     <script src="src/achievements.js"></script>
     <script>
         // --- UTILS ---
+        function setUIVisibility(show) {
+            if (show) {
+                document.body.classList.remove('hide-ui');
+            } else {
+                document.body.classList.add('hide-ui');
+            }
+        }
+
         function escapeHTML(str) {
             if (!str) return "";
             return str.replace(/[&<>'"]/g, 
@@ -1142,7 +1163,6 @@
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-mono text-gray-500">${task.percent}%</span>
                             <button onclick="toggleTaskEditMenu('${task.id}')" class="text-gray-400 hover:text-blue-500 p-1">
                                 <i class="fa-solid fa-chevron-down transition-transform duration-300" id="chevron-${task.id}"></i>
                             </button>
@@ -1150,15 +1170,9 @@
                     </div>
                     
                     <div id="edit-menu-${task.id}" class="flight-task-edit-menu border-t border-gray-100 dark:border-gray-700 pt-2">
-                        <div class="flex items-center justify-between gap-4">
-                            <div class="flex items-center gap-2 flex-1">
-                                <span class="text-[10px] text-gray-400 uppercase font-bold">Tiempo:</span>
-                                <input type="number" min="0" max="100" value="${task.percent}" 
-                                    class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-xs"
-                                    onchange="updateTaskPercent('${task.id}', this.value); renderFlightTasks();">
-                            </div>
+                        <div class="flex justify-end">
                             <button onclick="deleteTaskInFlight('${task.id}')" class="text-red-400 hover:text-red-600 text-xs flex items-center gap-1">
-                                <i class="fa-solid fa-trash"></i> Eliminar
+                                <i class="fa-solid fa-trash"></i> Eliminar Tarea
                             </button>
                         </div>
                     </div>
@@ -1171,27 +1185,42 @@
 
         function addTaskInFlight() {
             const input = document.getElementById('flight-task-input');
-            const pctInput = document.getElementById('flight-task-percent');
             const title = input.value.trim();
-            const pct = parseInt(pctInput.value) || 0;
 
             if (!title) return;
 
-            const currentTotal = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
-            if (currentTotal + pct > 100) {
-                showError("Límite de Tiempo", "No puedes añadir esta tarea porque superaría el 100% del tiempo de vuelo.");
+            const totalFlightMins = Math.round(trip.durationMs / 60000);
+            const currentTotalPct = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
+            
+            // Calculate % needed for 30 mins (25+5)
+            const pctNeeded = (30 / totalFlightMins) * 100;
+            
+            if (currentTotalPct + pctNeeded > 100) {
+                showError("Sin Espacio", "No hay tiempo suficiente en el vuelo para un bloque Pomodoro completo (30m).");
                 return;
             }
 
-            const newTask = {
+            // Add Focus
+            trip.tasks.push({
                 id: Date.now().toString(),
                 title: title,
-                percent: pct,
+                percent: (25 / totalFlightMins) * 100,
+                type: 'focus',
                 completed: false
-            };
-            trip.tasks.push(newTask);
+            });
+
+            // Add Break
+            trip.tasks.push({
+                id: (Date.now() + 1).toString(),
+                title: "Pausa / Descanso",
+                percent: (5 / totalFlightMins) * 100,
+                type: 'break',
+                completed: false
+            });
+            
             input.value = '';
             renderFlightTasks();
+            showToast("Bloque Pomodoro añadido", "success");
         }
 
         function showFinalSummary() {
@@ -1201,7 +1230,12 @@
 
         function checkTasksStatus() {
             if (trip.tasks.length > 0 && trip.tasks.every(t => t.completed)) {
-                // BIG CELEBRATION
+                // EARLY FINISH LOGIC
+                setUIVisibility(false);
+                clearInterval(timerInterval);
+                stopMusic();
+                
+                // Big Celebration
                 const duration = 5 * 1000;
                 const animationEnd = Date.now() + duration;
                 const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 400 };
@@ -1226,9 +1260,12 @@
                     sfx.play().catch(e => console.log("Audio block"));
                 }
 
+                // Show Final Summary immediately
                 setTimeout(() => {
-                    document.getElementById('success-modal').classList.remove('hidden');
-                }, 1000);
+                    document.getElementById('summary-title').innerText = "¡Misión Cumplida!";
+                    document.getElementById('summary-modal').classList.remove('hidden');
+                    executeCancellation(true); 
+                }, 2000);
             }
         }
 
@@ -1406,15 +1443,18 @@
 
         // --- NEW CANCELLATION LOGIC ---
         function cancelFlight() {
+            setUIVisibility(false);
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
 
         function closeConfirmModal() {
+            setUIVisibility(true);
             document.getElementById('confirm-modal').classList.add('hidden');
         }
 
-        function executeCancellation() {
+        function executeCancellation(forceSuccess = false) {
             clearFlightState();
+            setUIVisibility(false);
             document.getElementById('confirm-modal').classList.add('hidden');
             document.getElementById('tasks-done-modal').classList.add('hidden');
             
@@ -1435,16 +1475,16 @@
             const completedTasks = trip.tasks.filter(t => t.completed).length;
             const taskPct = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
-            const isArrival = progress >= 0.99;
+            const isArrival = progress >= 0.99 || forceSuccess;
             const allTasksDone = totalTasks > 0 && completedTasks === totalTasks;
             const titleEl = document.getElementById('summary-title');
             
-            if (!isArrival) {
+            if (!isArrival && !forceSuccess) {
                 incrementAbortedFlights();
             }
             
             if (titleEl) {
-                if (isArrival) {
+                if (isArrival || forceSuccess) {
                     titleEl.innerText = "¡Destino Alcanzado!";
                 } else if (allTasksDone) {
                     titleEl.innerText = "Resumen de tu Vuelo";
@@ -1710,6 +1750,15 @@
             const pauseDuration = Date.now() - pauseStartTime;
             totalPausedTime += pauseDuration;
             
+            // Mark the auto-pause task as completed if it was the trigger
+            if (lastTriggeredBreakId) {
+                const breakTask = trip.tasks.find(t => t.id === lastTriggeredBreakId);
+                if (breakTask) {
+                    breakTask.completed = true;
+                    renderFlightTasks(); // Update UI checkmark
+                }
+            }
+            
             isPaused = false;
             document.getElementById('pause-overlay').classList.add('hidden');
             
@@ -1792,6 +1841,9 @@
             updateActiveTaskHUD(progress);
         }
 
+        // Variable to track if we already triggered pause for a specific break task
+        let lastTriggeredBreakId = null;
+
         function updateActiveTaskHUD(globalProgress) {
             const hud = document.getElementById('active-task-hud');
             const btn = document.getElementById('btn-active-task-toggle');
@@ -1810,6 +1862,15 @@
                 if (btn) btn.style.display = 'none';
                 hud.classList.remove('open');
                 return;
+            }
+
+            // AUTO-PAUSE LOGIC
+            if (currentTask.type === 'break' && currentTask.id !== lastTriggeredBreakId && !isPaused) {
+                lastTriggeredBreakId = currentTask.id;
+                const totalFlightMins = Math.round(trip.durationMs / 60000);
+                const breakMins = Math.round((currentTask.percent / 100) * totalFlightMins);
+                startPause(breakMins); 
+                return; 
             }
 
             let accumulated = 0;

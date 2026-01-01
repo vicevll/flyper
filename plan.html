@@ -487,44 +487,83 @@
                            class="w-full bg-blue-500/5 dark:bg-white/5 border-2 border-dashed border-blue-500/20 dark:border-blue-400/20 rounded-2xl px-5 py-3 text-lg font-bold text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-all text-center">
                 </div>
 
-                <!-- Input Area -->
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="task-input" placeholder="Nueva tarea / Materia..." 
-                           class="flex-1 bg-white/50 dark:bg-black/20 border border-white/50 dark:border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-blue-500 dark:text-white transition-colors"
-                           onkeypress="if(event.key === 'Enter') addTask()">
-                    <button onclick="addTask()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors">
-                        <i class="fa-solid fa-plus"></i>
-                    </button>
+                <!-- Input Area: Simple List -->
+                <div class="bg-white/40 dark:bg-black/20 p-4 rounded-2xl mb-4 border border-white/20 dark:border-white/5">
+                    <div class="flex gap-2">
+                        <input type="text" id="task-input" placeholder="Añadir materia o tema a estudiar..." 
+                            class="flex-1 bg-transparent border-b border-gray-300 dark:border-gray-600 px-2 py-2 text-gray-800 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+                            onkeypress="if(event.key === 'Enter') addDraftTask()">
+                        
+                        <button onclick="addDraftTask()" class="bg-blue-600 hover:bg-blue-700 text-white w-12 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform active:scale-95">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-2 px-1">
+                        * Solo lista los temas. Ajustaremos los tiempos en el siguiente paso.
+                    </p>
                 </div>
 
                 <!-- List Area -->
                 <div class="flex-1 overflow-y-auto pr-1">
-                    <div id="task-list" class="space-y-3 pb-4">
-                        <!-- Las tareas se inyectan aquí -->
+                    <div id="task-list" class="space-y-2 pb-4">
+                        <!-- Las tareas preliminares se inyectan aquí -->
                     </div>
                     
                     <div id="empty-tasks" class="text-center py-10 text-gray-400 dark:text-gray-500">
-                        <i class="fa-regular fa-clipboard text-4xl mb-3 opacity-50"></i>
-                        <p class="text-sm">Agrega tareas para organizar tu tiempo de vuelo.</p>
+                        <i class="fa-solid fa-list-check text-4xl mb-3 opacity-30"></i>
+                        <p class="text-xs">Añade los temas que quieres cubrir en este vuelo.</p>
                     </div>
                 </div>
 
-                <!-- Summary Footer -->
+                <!-- Footer Next Step -->
                 <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
-                    <div class="flex justify-between items-center mb-4 text-sm">
-                        <span class="text-gray-500 dark:text-gray-400">Total asignado:</span>
-                        <span id="total-percent" class="font-bold text-gray-800 dark:text-white">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4 overflow-hidden">
-                        <div id="total-percent-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    
-                    <button onclick="confirmAndSaveItinerary()" id="btn-generate-ticket" disabled 
-                            class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-black dark:hover:bg-blue-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
-                        Confirmar y Generar Boucher
+                    <button onclick="generateItinerary()" id="btn-next-step" disabled 
+                            class="w-full bg-gray-900 dark:bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-black dark:hover:bg-blue-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
+                        Siguiente Paso <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    
-                    <button onclick="showBoardingPass()" class="w-full mt-3 text-xs font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL SELECCIÓN DE RITMO (POMODORO) -->
+        <div id="rhythm-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-gray-200 dark:border-gray-700">
+                <div class="text-center mb-6">
+                    <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-500">
+                        <i class="fa-solid fa-calculator text-2xl"></i>
+                    </div>
+                    <h2 class="text-xl font-black text-gray-800 dark:text-white">Ritmo Optimizado</h2>
+                    <p class="text-sm text-gray-500">Calcularemos la duración ideal de tus pomodoros para cubrir el tiempo de vuelo.</p>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <button onclick="generateItinerary()" class="w-full p-4 rounded-xl border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/20 flex items-center justify-between group transition-all text-left">
+                        <div>
+                            <div class="font-bold text-blue-600 dark:text-blue-400">Distribución Inteligente</div>
+                            <div class="text-xs text-gray-500">Ratio productivo 5:1 (Estudio/Pausa)</div>
+                        </div>
+                        <i class="fa-solid fa-wand-magic-sparkles text-blue-500 text-xl"></i>
+                    </button>
+                </div>
+                
+                <button onclick="closeRhythmModal()" class="w-full text-gray-400 hover:text-gray-600 text-sm font-bold">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- MODAL CONFIRMACIÓN BOUCHER -->
+        <div id="save-modal" class="hidden fixed inset-0 z-[350] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-opacity">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-gray-200 dark:border-gray-700 text-center">
+                <div class="mb-6">
+                    <i class="fa-solid fa-ticket text-4xl text-blue-500 mb-4"></i>
+                    <h2 class="text-xl font-black text-gray-800 dark:text-white mb-2">¡Plan Listo!</h2>
+                    <p class="text-sm text-gray-500">¿Quieres guardar este itinerario en tu historial?</p>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <button onclick="confirmAndSaveItinerary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                        <i class="fa-solid fa-save mr-2"></i> Guardar y Generar Boucher
+                    </button>
+                    <button onclick="showBoardingPass()" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                         Continuar sin guardar
                     </button>
                 </div>
@@ -583,9 +622,9 @@
 
                 <!-- Footer / Actions -->
                 <div class="p-6 bg-gray-50/50 dark:bg-black/20 border-t border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <button onclick="showScreen('screen-todo')" class="text-gray-400 font-bold hover:text-gray-600 dark:hover:text-gray-200 text-sm">Editar</button>
+                    <button onclick="showScreen('screen-todo')" class="text-gray-400 font-bold hover:text-gray-600 dark:hover:text-gray-200 text-sm">Volver</button>
                     <button onclick="startFlight()" class="text-white px-8 py-3 rounded-full font-black shadow-lg hover:scale-105 transition-transform flex items-center bg-blue-600 dark:bg-blue-500">
-                        Despegar <i class="fa-solid fa-plane-departure ml-2"></i>
+                        ¡LISTO PARA VOLAR! <i class="fa-solid fa-plane-departure ml-2"></i>
                     </button>
                 </div>
             </div>
@@ -757,6 +796,8 @@
             tasks: []
         };
 
+        let draftTasks = [];
+
         function toggleTheme() {
             const html = document.documentElement;
             isDarkMode = !isDarkMode;
@@ -764,153 +805,198 @@
             localStorage.theme = isDarkMode ? 'dark' : 'light';
         }
 
-        // --- TASK LOGIC ---
+        // --- TASK LOGIC & RHYTHM ---
         function showTasksScreen() {
-            renderTasks();
+            renderDraftTasks();
             showScreen('screen-todo');
         }
 
-        function addTask() {
+        function addDraftTask() {
             const input = document.getElementById('task-input');
             const title = input.value.trim();
             if (!title) return;
 
-            const currentTotal = trip.tasks.reduce((sum, t) => sum + t.percent, 0);
-            const remaining = Math.max(0, 100 - currentTotal);
-            const newPercent = remaining > 0 ? (remaining > 20 ? 20 : remaining) : 0;
-
-            const newTask = {
-                id: Date.now().toString(),
-                title: title,
-                percent: newPercent,
-                completed: false
-            };
-            trip.tasks.push(newTask);
+            draftTasks.push({ id: Date.now().toString() + Math.random(), title: title });
             input.value = '';
-            renderTasks();
+            renderDraftTasks();
         }
 
-        function removeTask(id) {
-            trip.tasks = trip.tasks.filter(t => t.id !== id);
-            renderTasks();
+        function removeDraftTask(id) {
+            draftTasks = draftTasks.filter(t => t.id !== id);
+            renderDraftTasks();
         }
 
-        function showError(title, msg) {
-            document.getElementById('error-modal-title').innerText = title;
-            document.getElementById('error-modal-msg').innerText = msg;
-            document.getElementById('error-modal').classList.remove('hidden');
-        }
-
-        function closeErrorModal() {
-            document.getElementById('error-modal').classList.add('hidden');
-        }
-
-        function updateTaskPercent(id, newPercent) {
-            const task = trip.tasks.find(t => t.id === id);
-            if (task) {
-                const val = parseInt(newPercent) || 0;
-                
-                const otherTasksTotal = trip.tasks.filter(t => t.id !== id).reduce((sum, t) => sum + t.percent, 0);
-                
-                if (otherTasksTotal + val > 100) {
-                    showError("Límite de Tiempo", "El tiempo total de las tareas no puede superar el 100% del vuelo. Ajusta otras tareas primero.");
-                    renderTasks();
-                    return;
-                }
-
-                task.percent = val;
-                renderTasks();
-            }
-        }
-
-        function renderTasks() {
+        function renderDraftTasks() {
             const list = document.getElementById('task-list');
             const empty = document.getElementById('empty-tasks');
-            
+            const nextBtn = document.getElementById('btn-next-step');
+
             list.innerHTML = '';
-            
-            if (trip.tasks.length === 0) {
+
+            if (draftTasks.length === 0) {
                 empty.style.display = 'block';
-                document.getElementById('btn-generate-ticket').disabled = true;
+                nextBtn.disabled = true;
             } else {
                 empty.style.display = 'none';
-                document.getElementById('btn-generate-ticket').disabled = false;
+                nextBtn.disabled = false;
             }
 
-            const totalMinutes = Math.round(trip.durationMs / 60000);
-            document.getElementById('todo-total-time').innerText = `Vuelo: ${totalMinutes} min`;
-
-            let totalPercent = 0;
-
-            trip.tasks.forEach(task => {
-                totalPercent += task.percent;
-                const taskMin = Math.round((task.percent / 100) * totalMinutes);
-
+            draftTasks.forEach(task => {
                 const el = document.createElement('div');
-                el.className = 'task-card bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 p-3 rounded-xl shadow-sm flex items-center gap-3 select-none';
+                el.className = 'draft-item bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-center shadow-sm select-none';
                 el.dataset.id = task.id;
-                
                 el.innerHTML = `
-                    <div class="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 handle">
-                        <i class="fa-solid fa-grip-vertical"></i>
+                    <div class="flex items-center gap-3">
+                        <div class="drag-handle cursor-grab text-gray-300 hover:text-gray-500 p-1">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </div>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">${escapeHTML(task.title)}</span>
                     </div>
-                    <div class="flex-1">
-                        <div class="font-semibold text-gray-800 dark:text-white text-sm">${escapeHTML(task.title)}</div>
-                        <div class="text-xs text-blue-600 dark:text-blue-400 font-mono">${taskMin} min</div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input type="number" min="0" max="100" value="${task.percent}" 
-                            class="w-16 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded px-2 py-1 text-xs text-center focus:outline-none focus:border-blue-500 dark:text-white"
-                            onchange="updateTaskPercent('${task.id}', this.value)">
-                        <span class="text-xs text-gray-500">%</span>
-                        <button onclick="removeTask('${task.id}')" class="text-red-400 hover:text-red-600 ml-2">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
+                    <button onclick="removeDraftTask('${task.id}')" class="text-gray-400 hover:text-red-500 transition-colors">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 `;
                 list.appendChild(el);
             });
+        }
 
-            document.getElementById('total-percent').innerText = totalPercent + '%';
-            document.getElementById('total-percent-bar').style.width = Math.min(100, totalPercent) + '%';
+        function openRhythmModal() {
+            document.getElementById('rhythm-modal').classList.remove('hidden');
+        }
+
+        function closeRhythmModal() {
+            document.getElementById('rhythm-modal').classList.add('hidden');
+        }
+
+        function generateItinerary() {
+            closeRhythmModal();
+            const totalFlightMins = Math.round(trip.durationMs / 60000);
+            const numTasks = draftTasks.length;
+            if (numTasks === 0) return;
+
+            // FÓRMULA: 1 tarea = 1 Pomodoro (Foco + Pausa)
+            // Ratio 5:1 -> Bloque total = 6 unidades.
+            // totalFlightMins = numTasks * (5x + 1x) = 6 * numTasks * x
+            // x = totalFlightMins / (6 * numTasks)
             
-            if (totalPercent > 100) {
-                document.getElementById('total-percent').classList.add('text-red-500');
-                document.getElementById('total-percent-bar').classList.add('bg-red-500');
-                document.getElementById('total-percent-bar').classList.remove('bg-blue-500');
+            const x = totalFlightMins / (6 * numTasks);
+            const focusTime = Math.floor(5 * x);
+            const breakTime = Math.floor(1 * x);
+            
+            let accumulatedMins = 0;
+            const newTasks = [];
+
+            draftTasks.forEach((draft, index) => {
+                const isLast = (index === numTasks - 1);
+                
+                // Focus block
+                let fTime = Math.max(1, focusTime);
+                newTasks.push({
+                    id: Date.now() + Math.random().toString(),
+                    title: draft.title,
+                    durationMins: fTime,
+                    type: 'focus',
+                    completed: false
+                });
+                accumulatedMins += fTime;
+
+                // Break block
+                let bTime = Math.max(1, breakTime);
+                
+                // Ajuste del último Pomodoro para clavar el 100% del vuelo
+                if (isLast) {
+                    const diff = totalFlightMins - (accumulatedMins + bTime);
+                    // El ajuste se lo damos al tiempo de estudio de la última tarea
+                    newTasks[newTasks.length - 1].durationMins += diff;
+                    accumulatedMins += diff;
+                }
+
+                newTasks.push({
+                    id: Date.now() + Math.random().toString(),
+                    title: "Pausa / Descanso",
+                    durationMins: bTime,
+                    type: 'break',
+                    completed: false
+                });
+                accumulatedMins += bTime;
+            });
+
+            // Recalcular porcentajes para el HUD
+            newTasks.forEach(t => { t.percent = (t.durationMins / totalFlightMins) * 100; });
+
+            trip.tasks = newTasks;
+            document.getElementById('save-modal').classList.remove('hidden');
+        }
+
+        function updatePreview() {
+            const oVal = document.getElementById('origin').value;
+            const dVal = document.getElementById('destination').value;
+            const btn = document.getElementById('btn-goto-tasks');
+            const box = document.getElementById('preview-box');
+
+            if (oVal && dVal && oVal !== dVal) {
+                const origin = getAirport(oVal);
+                const dest = getAirport(dVal);
+                const dist = calculateDist(origin.lat, origin.lon, dest.lat, dest.lon);
+                let timeHrs = dist / 850; 
+                let rawMins = Math.round(timeHrs * 60) + 15;
+                let roundedMins = Math.ceil(rawMins / 10) * 10;
+
+                trip.origin = origin;
+                trip.dest = dest;
+                trip.distance = dist;
+                trip.durationMs = roundedMins * 60 * 1000;
+
+                document.getElementById('preview-time').innerText = formatTime(roundedMins);
+                document.getElementById('preview-dist').innerText = Math.round(dist) + " km";
+                box.classList.remove('hidden');
+                btn.disabled = false;
             } else {
-                document.getElementById('total-percent').classList.remove('text-red-500');
-                document.getElementById('total-percent-bar').classList.remove('bg-red-500');
-                document.getElementById('total-percent-bar').classList.add('bg-blue-500');
+                box.classList.add('hidden');
+                btn.disabled = true;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const list = document.getElementById('task-list');
-            new Sortable(list, {
-                handle: '.handle',
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                onEnd: function (evt) {
-                    const newOrder = [];
-                    list.querySelectorAll('.task-card').forEach(card => {
-                        const id = card.dataset.id;
-                        const task = trip.tasks.find(t => t.id === id);
-                        if(task) newOrder.push(task);
-                    });
-                    trip.tasks = newOrder;
-                }
+        function showScreen(id) {
+            document.querySelectorAll('.active-screen').forEach(el => {
+                el.classList.remove('active-screen');
+                el.classList.add('hidden-screen');
             });
+            const target = document.getElementById(id);
+            target.classList.remove('hidden-screen');
+            target.classList.add('active-screen');
+        }
+
+        function showBoardingPass() {
+            document.getElementById('save-modal').classList.add('hidden');
+            document.getElementById('rhythm-modal').classList.add('hidden');
+
+            const sessionInput = document.getElementById('session-name-input');
+            trip.sessionName = sessionInput.value.trim() || "Misión de Estudio";
+            document.getElementById('ticket-session-name').innerText = trip.sessionName;
+
+            document.getElementById('ticket-origin').innerText = escapeHTML(trip.origin.code);
+            document.getElementById('ticket-dest').innerText = escapeHTML(trip.dest.code);
+            document.getElementById('ticket-duration').innerText = document.getElementById('preview-time').innerText;
             
-            // Check theme
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                isDarkMode = true;
-            } else {
-                document.documentElement.classList.remove('dark');
-                isDarkMode = false;
-            }
-        });
+            const etaDate = new Date(Date.now() + trip.durationMs);
+            const etaTime = etaDate.getHours().toString().padStart(2, '0') + ":" + etaDate.getMinutes().toString().padStart(2, '0');
+            const etaDateStr = etaDate.getDate().toString().padStart(2, '0') + "/" + (etaDate.getMonth() + 1).toString().padStart(2, '0');
+            
+            const ticketArrival = document.getElementById('ticket-arrival');
+            if (ticketArrival) ticketArrival.innerText = etaTime;
+            const ticketArrivalDate = document.getElementById('ticket-arrival-date');
+            if (ticketArrivalDate) ticketArrivalDate.innerText = etaDateStr;
+
+            showScreen('screen-ticket');
+        }
+
+        function startFlight() {
+            trip.startTime = Date.now();
+            const state = { trip: trip, elapsed: 0, timestamp: Date.now() };
+            localStorage.setItem('flyper_active_flight', JSON.stringify(state));
+            window.location.href = 'app.html';
+        }
 
         // --- ACHIEVEMENTS & STATS LOGIC ---
         function getStats() {
@@ -1007,23 +1093,10 @@
             document.getElementById('achievements-summary').innerText = 
                 `${unlockedCount}/${totalCount} desbloqueados • ${Math.floor(stats.totalFlightTime / 60)}h ${stats.totalFlightTime % 60}m vuelo total`;
 
-            // Nota sobre el tiempo
-            const note = document.createElement('div');
-            note.className = "col-span-full bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800 mb-2 flex items-start gap-2";
-            note.innerHTML = `
-                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-                <p class="text-xs text-blue-800 dark:text-blue-200">
-                    <strong>Importante:</strong> Las horas de vuelo y estadísticas solo se registran al 
-                    <span class="underline decoration-blue-500">aterrizar y completar el vuelo</span>.
-                </p>
-            `;
-            grid.appendChild(note);
-
             for (const key in ACHIEVEMENTS) {
                 const ach = ACHIEVEMENTS[key];
                 const isUnlocked = !!unlocked[key];
                 const dateStr = isUnlocked ? new Date(unlocked[key]).toLocaleDateString() : '';
-                
                 const currentVal = ach.getValue ? ach.getValue(stats) : 0;
                 const targetVal = ach.target || 1;
                 const percent = Math.min(100, Math.max(0, (currentVal / targetVal) * 100));
@@ -1048,15 +1121,11 @@
                                 ${!isUnlocked ? `<span class="text-xs text-gray-400">${currentVal}/${targetVal}</span>` : ''}
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 leading-tight mb-1">${ach.description}</div>
-                            
                             ${isUnlocked 
                                 ? `<div class="text-[10px] text-blue-500 font-bold mt-1"><i class="fa-solid fa-check"></i> Conseguido: ${dateStr}</div>` 
-                                : `
-                                    <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                                : `<div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full mt-2 overflow-hidden">
                                         <div class="bg-blue-400 h-full rounded-full transition-all duration-500" style="width: ${percent}%"></div>
-                                    </div>
-                                    <div class="text-[9px] text-gray-400 text-right mt-0.5">${percent.toFixed(0)}%</div>
-                                `
+                                    </div>`
                             }
                         </div>
                     </div>
@@ -1134,166 +1203,6 @@
             `;
         }
 
-        // --- INIT & CORE LOGIC ---
-        window.onload = () => { 
-            loadSelects(); 
-            checkUrlForPlan();
-            // Si hay vuelo activo, sugerir ir al vuelo? No, solo si el usuario va a app.html
-        };
-
-        let tomSelectOrigin, tomSelectDest;
-
-        function loadSelects() {
-            const s1 = document.getElementById('origin');
-            const s2 = document.getElementById('destination');
-            
-            const sorted = [...airports].sort((a,b) => {
-                if (a.country < b.country) return -1;
-                if (a.country > b.country) return 1;
-                return a.city.localeCompare(b.city);
-            });
-
-            const groups = {};
-            sorted.forEach(ap => {
-                if (!groups[ap.country]) groups[ap.country] = [];
-                groups[ap.country].push(ap);
-            });
-
-            const buildOptions = () => {
-                let html = '<option value="" disabled selected>Buscar aeropuerto...</option>';
-                for (const [country, list] of Object.entries(groups)) {
-                    html += `<optgroup label="${country}">`;
-                    list.forEach(ap => {
-                        html += `<option value="${ap.code}">${ap.city} (${ap.code}) - ${ap.country}</option>`;
-                    });
-                    html += `</optgroup>`;
-                }
-                return html;
-            };
-
-            const optionsHTML = buildOptions();
-            s1.innerHTML = optionsHTML;
-            s2.innerHTML = optionsHTML;
-
-            const tsConfig = {
-                create: false,
-                sortField: { field: "text", direction: "asc" },
-                placeholder: "Escribe para buscar...",
-                render: {
-                    option: function(data, escape) {
-                        const parts = data.text.split(' - ');
-                        return '<div>' +
-                                '<span class="font-bold block">' + escape(parts[0]) + '</span>' +
-                                '<span class="text-xs text-gray-500 block">' + escape(parts[1] || '') + '</span>' +
-                            '</div>';
-                    },
-                    item: function(data, escape) {
-                        return '<div>' + escape(data.text) + '</div>';
-                    }
-                },
-                onChange: function() {
-                    updatePreview();
-                }
-            };
-
-            tomSelectOrigin = new TomSelect('#origin', tsConfig);
-            tomSelectDest = new TomSelect('#destination', tsConfig);
-        }
-
-        function getAirport(code) { return airports.find(a => a.code === code); }
-
-        function calculateDist(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        function formatTime(mins) {
-            const h = Math.floor(mins / 60);
-            const m = mins % 60;
-            return h > 0 ? `${h}h ${m}m` : `${m} min`;
-        }
-
-        function updatePreview() {
-            const oVal = document.getElementById('origin').value;
-            const dVal = document.getElementById('destination').value;
-            const btn = document.getElementById('btn-goto-tasks');
-            const box = document.getElementById('preview-box');
-
-            if (oVal && dVal && oVal !== dVal) {
-                const origin = getAirport(oVal);
-                const dest = getAirport(dVal);
-                const dist = calculateDist(origin.lat, origin.lon, dest.lat, dest.lon);
-                const timeHrs = dist / 850; 
-                const totalMins = Math.round(timeHrs * 60) + 15;
-
-                trip.origin = origin;
-                trip.dest = dest;
-                trip.distance = dist;
-                trip.durationMs = totalMins * 60 * 1000;
-
-                document.getElementById('preview-time').innerText = formatTime(totalMins);
-                document.getElementById('preview-dist').innerText = Math.round(dist) + " km";
-                box.classList.remove('hidden');
-                btn.disabled = false;
-            } else {
-                box.classList.add('hidden');
-                btn.disabled = true;
-            }
-        }
-
-        function showScreen(id) {
-            document.querySelectorAll('.active-screen').forEach(el => {
-                el.classList.remove('active-screen');
-                el.classList.add('hidden-screen');
-            });
-            const target = document.getElementById(id);
-            target.classList.remove('hidden-screen');
-            target.classList.add('active-screen');
-        }
-
-        function showBoardingPass() {
-            const sessionInput = document.getElementById('session-name-input');
-            trip.sessionName = sessionInput.value.trim() || "Misión de Estudio";
-            document.getElementById('ticket-session-name').innerText = trip.sessionName;
-
-            document.getElementById('ticket-origin').innerText = escapeHTML(trip.origin.code);
-            document.getElementById('ticket-dest').innerText = escapeHTML(trip.dest.code);
-            document.getElementById('ticket-duration').innerText = document.getElementById('preview-time').innerText;
-            
-            const etaDate = new Date(Date.now() + trip.durationMs);
-            const etaTime = etaDate.getHours().toString().padStart(2, '0') + ":" + etaDate.getMinutes().toString().padStart(2, '0');
-            const etaDateStr = etaDate.getDate().toString().padStart(2, '0') + "/" + (etaDate.getMonth() + 1).toString().padStart(2, '0');
-            
-            const ticketArrival = document.getElementById('ticket-arrival');
-            if (ticketArrival) ticketArrival.innerText = etaTime;
-            const ticketArrivalDate = document.getElementById('ticket-arrival-date');
-            if (ticketArrivalDate) ticketArrivalDate.innerText = etaDateStr;
-
-            showScreen('screen-ticket');
-        }
-
-        function startFlight() {
-            // Set basic Start Time
-            trip.startTime = Date.now();
-            
-            // Save state for app.html to pick up
-            const state = {
-                trip: trip,
-                elapsed: 0,
-                timestamp: Date.now()
-            };
-            localStorage.setItem('flyper_active_flight', JSON.stringify(state));
-
-            // Redirect to App
-            window.location.href = 'app.html';
-        }
-
         // --- HANGAR & LOCAL STORAGE LOGIC ---
         function confirmAndSaveItinerary() {
             saveCurrentItinerary();
@@ -1303,11 +1212,7 @@
         function saveCurrentItinerary() {
             const sessionInput = document.getElementById('session-name-input');
             const sessionName = sessionInput.value.trim() || "Misión de Estudio";
-            
-            if (!trip.origin || !trip.dest) {
-                showError("Plan incompleto", "Debes seleccionar origen y destino antes de guardar.");
-                return;
-            }
+            if (!trip.origin || !trip.dest) return;
 
             const itinerary = {
                 id: Date.now(),
@@ -1324,15 +1229,6 @@
             history.unshift(itinerary); 
             localStorage.setItem('flyper_hangar', JSON.stringify(history));
             updateStatsForAction('save');
-
-            const btn = event.currentTarget;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Guardado!';
-            btn.classList.replace('text-blue-600', 'text-green-600');
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.classList.replace('text-green-600', 'text-blue-600');
-            }, 2000);
         }
 
         function openHangar() {
@@ -1347,220 +1243,27 @@
         function renderHangarList() {
             const list = document.getElementById('hangar-list');
             const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            
             list.innerHTML = '';
 
             if (history.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-10 opacity-40">
-                        <i class="fa-solid fa-plane-slash text-4xl mb-3"></i>
-                        <p class="text-sm">El hangar está vacío.</p>
-                    </div>
-                `;
+                list.innerHTML = '<div class="text-center py-10 opacity-40">El hangar está vacío.</div>';
                 return;
             }
 
             history.forEach(item => {
                 const el = document.createElement('div');
-                el.className = "bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex justify-between items-center gap-4 hover:border-blue-400 transition-colors cursor-pointer group";
-                el.onclick = (e) => {
-                    if (e.target.closest('.btn-action')) return;
-                    loadItinerary(item.id);
-                };
-
+                el.className = "bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 flex justify-between items-center cursor-pointer";
+                el.onclick = () => loadItinerary(item.id);
                 el.innerHTML = `
                     <div class="flex-1">
-                        <div class="text-xs text-blue-500 font-bold uppercase tracking-tighter mb-1">${item.date}</div>
-                        <div class="font-bold text-gray-800 dark:text-white leading-tight mb-1">${escapeHTML(item.name)}</div>
-                        <div class="text-[10px] text-gray-500 flex items-center gap-1">
-                            ${escapeHTML(item.origin.code)} <i class="fa-solid fa-arrow-right text-[8px]"></i> ${escapeHTML(item.dest.code)} 
-                            • ${item.tasks.length} tareas
-                        </div>
+                        <div class="text-xs text-blue-500 font-bold uppercase">${item.date}</div>
+                        <div class="font-bold text-gray-800 dark:text-white">${escapeHTML(item.name)}</div>
+                        <div class="text-[10px] text-gray-500">${item.origin.code} → ${item.dest.code}</div>
                     </div>
-                    <div class="flex items-center gap-1">
-                        <button class="btn-action text-gray-300 hover:text-blue-500 p-2 transition-colors" title="Compartir" onclick="shareItinerary(${item.id})">
-                            <i class="fa-solid fa-share-nodes"></i>
-                        </button>
-                        <button class="btn-action text-gray-300 hover:text-red-500 p-2 transition-colors" title="Eliminar" onclick="deleteItinerary(${item.id})">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-500 transition-colors ml-1"></i>
-                    </div>
+                    <button class="text-gray-300 hover:text-red-500 p-2" onclick="event.stopPropagation(); deleteItinerary(${item.id})"><i class="fa-solid fa-trash-can"></i></button>
                 `;
                 list.appendChild(el);
             });
-        }
-
-        // --- SHARING LOGIC ---
-        function shareItinerary(id) {
-            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            const item = history.find(i => i.id === id);
-            if (!item) return;
-
-            const shareable = {
-                n: item.name,
-                o: item.origin.code, 
-                d: item.dest.code,
-                t: item.durationMs,
-                tasks: item.tasks.map(t => ({
-                    n: t.title,
-                    p: t.percent
-                }))
-            };
-
-            try {
-                const json = JSON.stringify(shareable);
-                const encoded = btoa(unescape(encodeURIComponent(json)));
-                const url = window.location.origin + window.location.pathname + "?plan=" + encoded;
-
-                navigator.clipboard.writeText(url).then(() => {
-                    updateStatsForAction('share');
-                    showToast("¡Link copiado al portapapeles!", "success");
-                }).catch(err => {
-                    console.error('Error copying link: ', err);
-                    showToast("Error al copiar link", "error");
-                });
-            } catch (e) {
-                console.error("Encoding error:", e);
-                showToast("Error al generar el link", "error");
-            }
-        }
-
-        function showToast(msg, type = "success") {
-            const toast = document.getElementById('toast');
-            const msgEl = document.getElementById('toast-msg');
-            const iconEl = document.getElementById('toast-icon');
-
-            msgEl.innerText = msg;
-            if (type === "success") {
-                iconEl.className = "fa-solid fa-check-circle text-green-500";
-            } else {
-                iconEl.className = "fa-solid fa-circle-exclamation text-red-500";
-            }
-
-            toast.classList.remove('hidden');
-            toast.classList.remove('opacity-0');
-            
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('hidden');
-                    toast.classList.remove('opacity-0'); 
-                }, 300);
-            }, 3000);
-        }
-
-        // --- IMPORT LOGIC ---
-        let pendingImport = null;
-
-        function checkUrlForPlan() {
-            const params = new URLSearchParams(window.location.search);
-            const encoded = params.get('plan');
-
-            if (encoded) {
-                try {
-                    const json = decodeURIComponent(escape(atob(encoded)));
-                    const data = JSON.parse(json);
-                    validateAndPrepareImport(data);
-                    
-                    const newUrl = window.location.pathname;
-                    window.history.replaceState({}, document.title, newUrl);
-                } catch (e) {
-                    console.error("Decoding error:", e);
-                    showToast("Link de vuelo inválido", "error");
-                }
-            }
-        }
-
-        function validateAndPrepareImport(data) {
-            if (!data.n || !data.o || !data.d || !data.tasks) {
-                showToast("Datos del plan corruptos", "error");
-                return;
-            }
-
-            const originAp = getAirport(data.o);
-            const destAp = getAirport(data.d);
-
-            if (!originAp || !destAp) {
-                showToast("Aeropuerto desconocido en el plan", "error");
-                return;
-            }
-
-            pendingImport = {
-                name: data.n,
-                origin: originAp,
-                dest: destAp,
-                durationMs: data.t || 0,
-                tasks: data.tasks.map((t, idx) => ({
-                    id: Date.now().toString() + idx,
-                    title: t.n,
-                    percent: t.p,
-                    completed: false
-                }))
-            };
-
-            const dist = calculateDist(originAp.lat, originAp.lon, destAp.lat, destAp.lon);
-            pendingImport.distance = dist;
-            if (!pendingImport.durationMs) {
-                const timeHrs = dist / 850; 
-                pendingImport.durationMs = (Math.round(timeHrs * 60) + 15) * 60 * 1000;
-            }
-
-            document.getElementById('import-name').innerText = pendingImport.name;
-            document.getElementById('import-duration').innerText = formatTime(Math.round(pendingImport.durationMs / 60000));
-            document.getElementById('import-origin').innerText = pendingImport.origin.code;
-            document.getElementById('import-dest').innerText = pendingImport.dest.code;
-            document.getElementById('import-task-count').innerText = pendingImport.tasks.length + " tareas";
-
-            document.getElementById('import-modal').classList.remove('hidden');
-        }
-
-        function closeImportModal() {
-            document.getElementById('import-modal').classList.add('hidden');
-            pendingImport = null;
-        }
-
-        function importFlyNow() {
-            if (!pendingImport) return;
-            
-            trip = {
-                ...pendingImport,
-                startTime: 0,
-                sessionName: pendingImport.name
-            };
-            
-            if(tomSelectOrigin) tomSelectOrigin.setValue(trip.origin.code, true);
-            if(tomSelectDest) tomSelectDest.setValue(trip.dest.code, true);
-            document.getElementById('session-name-input').value = trip.sessionName || trip.name;
-            
-            updatePreview(); 
-            showTasksScreen();
-            
-            closeImportModal();
-            showToast("Plan importado correctamente");
-        }
-
-        function importSave() {
-            if (!pendingImport) return;
-
-            const itinerary = {
-                id: Date.now(),
-                name: pendingImport.name,
-                origin: pendingImport.origin,
-                dest: pendingImport.dest,
-                tasks: pendingImport.tasks,
-                durationMs: pendingImport.durationMs,
-                distance: pendingImport.distance,
-                date: new Date().toLocaleDateString()
-            };
-
-            let history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
-            history.unshift(itinerary);
-            localStorage.setItem('flyper_hangar', JSON.stringify(history));
-            
-            closeImportModal();
-            showToast("Plan guardado en el Hangar");
-            openHangar(); 
         }
 
         function deleteItinerary(id) {
@@ -1573,25 +1276,157 @@
         function loadItinerary(id) {
             const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
             const item = history.find(i => i.id === id);
-            
             if (!item) return;
 
-            trip.origin = item.origin;
-            trip.dest = item.dest;
-            trip.tasks = [...item.tasks];
-            trip.durationMs = item.durationMs;
-            trip.distance = item.distance;
-            trip.sessionName = item.name;
+            trip = { ...item };
+            draftTasks = item.tasks.filter(t => t.type === 'focus').map(t => ({ id: Date.now() + Math.random(), title: t.title }));
 
             if (tomSelectOrigin) tomSelectOrigin.setValue(item.origin.code, true);
             if (tomSelectDest) tomSelectDest.setValue(item.dest.code, true);
-            
             document.getElementById('session-name-input').value = item.name;
 
             closeHangar();
             updatePreview();
             showTasksScreen();
         }
+
+        // --- SHARING & IMPORT ---
+        function shareItinerary(id) {
+            const history = JSON.parse(localStorage.getItem('flyper_hangar') || "[]");
+            const item = history.find(i => i.id === id);
+            if (!item) return;
+
+            const shareable = {
+                n: item.name, o: item.origin.code, d: item.dest.code, t: item.durationMs,
+                tasks: item.tasks.map(t => ({ n: t.title, p: t.percent, ty: t.type, dm: t.durationMins }))
+            };
+
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(shareable))));
+                navigator.clipboard.writeText(window.location.origin + window.location.pathname + "?plan=" + encoded).then(() => {
+                    updateStatsForAction('share');
+                    showToast("¡Link copiado!", "success");
+                });
+            } catch (e) { showToast("Error al compartir", "error"); }
+        }
+
+        function checkUrlForPlan() {
+            const encoded = new URLSearchParams(window.location.search).get('plan');
+            if (encoded) {
+                try {
+                    const data = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+                    validateAndPrepareImport(data);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) { showToast("Link inválido", "error"); }
+            }
+        }
+
+        function validateAndPrepareImport(data) {
+            const originAp = airports.find(a => a.code === data.o);
+            const destAp = airports.find(a => a.code === data.d);
+            if (!originAp || !destAp) return;
+
+            pendingImport = {
+                name: data.n, origin: originAp, dest: destAp, durationMs: data.t,
+                tasks: data.tasks.map((t, idx) => ({ id: Date.now().toString() + idx, title: t.n, percent: t.p, type: t.ty, durationMins: t.dm, completed: false }))
+            };
+
+            document.getElementById('import-name').innerText = pendingImport.name;
+            document.getElementById('import-origin').innerText = pendingImport.origin.code;
+            document.getElementById('import-dest').innerText = pendingImport.dest.code;
+            document.getElementById('import-modal').classList.remove('hidden');
+        }
+
+        function closeImportModal() { document.getElementById('import-modal').classList.add('hidden'); }
+
+        function importFlyNow() {
+            if (!pendingImport) return;
+            trip = { ...pendingImport, startTime: 0, sessionName: pendingImport.name };
+            draftTasks = trip.tasks.filter(t => t.type === 'focus').map(t => ({ id: Date.now() + Math.random(), title: t.title }));
+            if(tomSelectOrigin) tomSelectOrigin.setValue(trip.origin.code, true);
+            if(tomSelectDest) tomSelectDest.setValue(trip.dest.code, true);
+            updatePreview(); showTasksScreen(); closeImportModal();
+        }
+
+        // --- CORE UTILS ---
+        let tomSelectOrigin, tomSelectDest;
+        function getAirport(code) { return airports.find(a => a.code === code); }
+        function calculateDist(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+        function formatTime(mins) {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return h > 0 ? `${h}h ${m}m` : `${m} min`;
+        }
+
+        function loadSelects() {
+            const sorted = [...airports].sort((a,b) => a.country === b.country ? a.city.localeCompare(b.city) : a.country.localeCompare(b.country));
+            const groups = {};
+            sorted.forEach(ap => { if (!groups[ap.country]) groups[ap.country] = []; groups[ap.country].push(ap); });
+
+            const buildOptions = () => {
+                let html = '<option value="" disabled selected>Seleccionar aeropuerto...</option>';
+                for (const [country, list] of Object.entries(groups)) {
+                    html += `<optgroup label="${country}">`;
+                    list.forEach(ap => { html += `<option value="${ap.code}">${ap.city} (${ap.code}) - ${ap.country}</option>`; });
+                    html += `</optgroup>`;
+                }
+                return html;
+            };
+
+            document.getElementById('origin').innerHTML = buildOptions();
+            document.getElementById('destination').innerHTML = buildOptions();
+
+            const tsConfig = {
+                create: false, sortField: { field: "text", direction: "asc" }, placeholder: "Seleccionar aeropuerto...",
+                onChange: () => updatePreview()
+            };
+            tomSelectOrigin = new TomSelect('#origin', tsConfig);
+            tomSelectDest = new TomSelect('#destination', tsConfig);
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function showError(title, msg) {
+            document.getElementById('error-modal-title').innerText = title;
+            document.getElementById('error-modal-msg').innerText = msg;
+            document.getElementById('error-modal').classList.remove('hidden');
+        }
+        function closeErrorModal() { document.getElementById('error-modal').classList.add('hidden'); }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSelects();
+            checkUrlForPlan();
+            
+            new Sortable(document.getElementById('task-list'), {
+                handle: '.drag-handle',
+                animation: 150,
+                onEnd: () => {
+                    const newOrder = [];
+                    document.querySelectorAll('.draft-item').forEach(el => {
+                        const task = draftTasks.find(t => t.id == el.dataset.id);
+                        if(task) newOrder.push(task);
+                    });
+                    draftTasks = newOrder;
+                }
+            });
+
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                isDarkMode = true;
+            }
+        });
     </script>
 </body>
 </html>
