@@ -470,6 +470,28 @@
             }
         }
 
+        /* Custom Scrollbar for Dropdown */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+        html.dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
         /* Prevent text selection */
         body {
             -webkit-user-select: none;
@@ -622,18 +644,6 @@
                     </button>
                 </div>
 
-                <!-- BOTÓN LISTA TAREAS -->
-                <div class="relative">
-                    <button onclick="toggleTaskList()" class="music-btn shadow-lg" title="Plan de Vuelo">
-                        <i class="fa-solid fa-list-check"></i>
-                    </button>
-                </div>
-
-                <!-- BOTÓN TAREA ACTUAL -->
-                <button id="btn-active-task-toggle" onclick="toggleActiveTaskMenu()" class="music-btn shadow-lg" title="Tarea Actual">
-                    <i class="fa-solid fa-person-digging"></i>
-                </button>
-
                 <!-- BOTÓN ABORTAR VUELO -->
                 <button onclick="cancelFlight()" class="cancel-btn shadow-lg" title="Abortar Vuelo">
                     <i class="fa-solid fa-plane-slash"></i>
@@ -646,28 +656,7 @@
                 </button>
             </div>
 
-            <!-- TAREA ACTUAL (POSICIÓN SUPERIOR) -->
-            <div id="active-task-hud" class="active-task-menu glass-panel shadow-2xl">
-                <div class="flex justify-between items-center mb-3">
-                    <div class="text-xs font-bold text-[#0077b6] dark:text-[#38bdf8] uppercase tracking-wider">
-                        <i class="fa-solid fa-play mr-1"></i> Tarea Actual
-                    </div>
-                    <button onclick="toggleActiveTaskMenu()" class="text-gray-400 hover:text-red-500" style="pointer-events: auto;"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="text-2xl font-mono font-black text-gray-700 dark:text-gray-200 mb-1" id="active-task-time">--:--</div>
-                <div class="font-bold text-lg text-gray-800 dark:text-white mb-3" id="active-task-title">Nombre de la Tarea</div>
-                <div class="flex items-center gap-3">
-                    <div class="flex-1 bg-gray-200 dark:bg-gray-700 h-3 rounded-full overflow-hidden">
-                        <div id="active-task-bar" class="bg-[#0077b6] dark:bg-[#38bdf8] h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                    <div id="active-task-pct" class="text-sm font-black text-[#0077b6] dark:text-[#38bdf8] min-w-[40px] text-right">0%</div>
-                </div>
-                <button onclick="completeCurrentTask()" class="btn-next-task">
-                    Siguiente Tarea <i class="fa-solid fa-forward ml-1"></i>
-                </button>
-            </div>
-
-            <!-- MUSIC MENU -->
+            <!-- PAUSE OVERLAY -->
             <div id="music-menu" class="music-menu task-panel glass-panel">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-gray-800 dark:text-white text-base">Atmósfera de Estudio (Radio)</h3>
@@ -713,27 +702,7 @@
                 </div>
             </div>
 
-            <!-- FLIGHT TASK LIST -->
-            <div id="flight-task-list" class="task-overlay-list task-panel glass-panel shadow-2xl">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex flex-col">
-                        <span class="text-[9px] font-black uppercase tracking-widest text-blue-500 opacity-70">Misión</span>
-                        <h3 class="font-bold text-gray-800 dark:text-white text-base leading-tight" id="flight-list-session-name">Plan de Vuelo</h3>
-                    </div>
-                    <button onclick="toggleTaskList()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div class="bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/20 dark:border-blue-400/20 rounded-xl p-3 mb-4">
-                    <div class="flex flex-col gap-2">
-                        <input type="text" id="flight-task-input" placeholder="Nombre del bloque..." 
-                            class="w-full bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white mb-1">
-                        
-                        <button onclick="addTaskInFlight()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-stopwatch"></i> Agregar pomodoro
-                        </button>
-                    </div>
-                </div>
-                <div id="flight-tasks-container" class="space-y-2"></div>
-            </div>
+
 
             <!-- PAUSE MENU -->
             <div id="pause-menu" class="music-menu task-panel glass-panel" style="z-index: 1100;">
@@ -773,27 +742,89 @@
                 </button>
             </div>
 
-            <!-- HUD SUPERIOR (TIEMPO, FINALIZACIÓN, PROGRESO) -->
+            <!-- HUD SUPERIOR (TIEMPO, FINALIZACIÓN, PROGRESO, TAREA ACTUAL) -->
             <div class="absolute top-0 left-0 right-0 p-4 z-[90] pointer-events-none">
-                <div class="max-w-3xl mx-auto flex flex-wrap justify-center gap-3 pointer-events-auto">
-                    <!-- Caja 1: Tiempo Restante -->
-                    <div class="hud-panel p-3 px-5 text-center min-w-[140px]">
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Tiempo Restante</div>
-                        <div class="text-2xl font-mono font-bold text-gray-800 dark:text-white" id="hud-timer">00:00:00</div>
-                    </div>
+                <div class="max-w-3xl mx-auto flex flex-col gap-3 pointer-events-auto">
                     
-                    <!-- Caja 2: Finalización -->
-                    <div class="hud-panel p-3 px-5 text-center min-w-[140px]">
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Finalización</div>
-                        <div class="text-xl font-mono font-bold text-gray-800 dark:text-white leading-none" id="hud-arrival">--:--</div>
-                        <div class="text-[10px] text-gray-400 font-mono mt-1" id="hud-arrival-date">--/--/--</div>
+                    <!-- Top Stats Row -->
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <!-- Caja 1: Tiempo Restante -->
+                        <div class="hud-panel p-3 px-5 text-center min-w-[140px] flex-1">
+                            <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Tiempo Restante</div>
+                            <div class="text-2xl font-mono font-bold text-gray-800 dark:text-white" id="hud-timer">00:00:00</div>
+                        </div>
+                        
+                        <!-- Caja 2: Finalización -->
+                        <div class="hud-panel p-3 px-5 text-center min-w-[140px] flex-1">
+                            <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Finalización</div>
+                            <div class="text-xl font-mono font-bold text-gray-800 dark:text-white leading-none" id="hud-arrival">--:--</div>
+                            <div class="text-[10px] text-gray-400 font-mono mt-1" id="hud-arrival-date">--/--/--</div>
+                        </div>
+                        
+                        <!-- Caja 3: Progreso -->
+                        <div class="hud-panel p-3 px-5 text-center min-w-[120px] flex-1 flex flex-col justify-center">
+                            <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Progreso</div>
+                            <div class="text-2xl font-bold text-[#0077b6] dark:text-[#38bdf8]" id="hud-pct">0%</div>
+                        </div>
                     </div>
-                    
-                    <!-- Caja 3: Progreso -->
-                    <div class="hud-panel p-3 px-5 text-center min-w-[120px] flex flex-col justify-center">
-                        <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">Progreso</div>
-                        <div class="text-2xl font-bold text-[#0077b6] dark:text-[#38bdf8]" id="hud-pct">0%</div>
+
+                    <!-- ACTIVE TASK BAR (FIXED) -->
+                    <div id="top-active-task-bar" class="hud-panel p-3 flex flex-wrap items-center justify-between gap-2 sm:gap-4 transition-all duration-300 relative overflow-visible shadow-xl">
+                        
+                        <!-- Task Info & Dropdown Trigger -->
+                        <div class="flex-1 flex items-center gap-3 cursor-pointer group min-w-[150px]" onclick="toggleTaskDropdown()">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <i class="fa-solid fa-layer-group" id="task-icon-status"></i>
+                            </div>
+                            <div class="flex flex-col overflow-hidden min-w-0">
+                                <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider flex items-center gap-1">
+                                    <span id="top-bar-status">Tarea Actual</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] opacity-50 transition-transform duration-300" id="task-dropdown-chevron"></i>
+                                </div>
+                                <div class="text-base font-bold text-gray-800 dark:text-white truncate max-w-[150px] sm:max-w-none" id="top-bar-title">Preparando Vuelo...</div>
+                            </div>
+                        </div>
+
+                        <!-- Timer & Progress -->
+                        <div class="flex items-center gap-3 sm:gap-4 flex-shrink-0 ml-auto">
+                            <div class="text-right block">
+                                <div class="text-lg font-mono font-bold text-gray-800 dark:text-white leading-none" id="top-bar-timer">--m</div>
+                            </div>
+                            
+                            <!-- Complete Checkbox -->
+                            <button onclick="completeCurrentTask()" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-100 dark:bg-gray-700/50 hover:bg-green-500 hover:text-white dark:hover:bg-green-500 text-gray-400 transition-all duration-200 flex items-center justify-center shadow-inner group" title="Completar Tarea">
+                                <i class="fa-solid fa-check text-lg sm:text-xl transform group-hover:scale-125 transition-transform"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Progress Bar Background -->
+                        <div class="absolute bottom-0 left-0 h-1 bg-gray-200 dark:bg-gray-700 w-full rounded-b-xl overflow-hidden">
+                            <div id="top-bar-progress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+
                     </div>
+
+                    <!-- TASK DROPDOWN (REST OF TASKS) -->
+                    <div id="top-task-dropdown" class="max-h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0 translate-y-[-10px]">
+                        <div class="hud-panel p-4 mt-1 max-h-[50vh] overflow-y-auto custom-scrollbar">
+                            <div class="flex justify-between items-center mb-3 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md pb-2 border-b border-gray-100 dark:border-gray-700 z-10">
+                                <h3 class="font-bold text-sm text-gray-600 dark:text-gray-300">Próximas Tareas</h3>
+                                <button onclick="addTaskInFlight()" class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded hover:bg-blue-200 transition">
+                                    <i class="fa-solid fa-plus"></i> Añadir
+                                </button>
+                            </div>
+                            
+                             <div class="flex gap-2 mb-3">
+                                <input type="text" id="flight-task-input" placeholder="Nueva tarea..." 
+                                    class="flex-1 bg-white/50 dark:bg-black/30 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500 dark:text-white">
+                             </div>
+
+                            <div id="flight-tasks-container" class="space-y-2">
+                                <!-- Tasks injected here -->
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -1092,6 +1123,12 @@
                         if(task) newOrder.push(task);
                     });
                     trip.tasks = newOrder;
+                    
+                    // Clear anchors on reorder to ensure the new top task starts fresh
+                    trip.tasks.forEach(t => delete t.startAnchor);
+                    
+                    saveFlightState();
+                    updateActiveTaskHUD(getFlightProgress());
                 }
             });
             
@@ -1102,6 +1139,17 @@
             } else {
                 document.documentElement.classList.remove('dark');
                 isDarkMode = false;
+            }
+
+            // Reducir volumen de efectos de sonido
+            document.getElementById('sfx-success').volume = 0.4;
+            document.getElementById('sfx-overtime').volume = 0.4;
+            document.getElementById('sfx-achievement').volume = 0.4;
+
+            // RESPONSIVE INIT: Ensure menus are closed on mobile
+            if (window.innerWidth < 1024) {
+                const musicMenu = document.getElementById('music-menu');
+                if (musicMenu) musicMenu.classList.remove('open');
             }
         });
 
@@ -1230,12 +1278,12 @@
 
         function checkTasksStatus() {
             if (trip.tasks.length > 0 && trip.tasks.every(t => t.completed)) {
-                // EARLY FINISH LOGIC
+                // TERMINAR VUELO (Tareas Completas)
                 setUIVisibility(false);
                 clearInterval(timerInterval);
                 stopMusic();
                 
-                // Big Celebration
+                // Celebración
                 const duration = 5 * 1000;
                 const animationEnd = Date.now() + duration;
                 const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 400 };
@@ -1260,11 +1308,16 @@
                     sfx.play().catch(e => console.log("Audio block"));
                 }
 
-                // Show Final Summary immediately
+                // Mostrar Resumen Final
                 setTimeout(() => {
-                    document.getElementById('summary-title').innerText = "¡Misión Cumplida!";
-                    document.getElementById('summary-modal').classList.remove('hidden');
+                    // Llamamos a executeCancellation con forceSuccess=true para guardar stats
                     executeCancellation(true); 
+                    
+                    // SOBRESCRIBIMOS el título para que NO diga "Destino Alcanzado"
+                    const titleEl = document.getElementById('summary-title');
+                    if (titleEl) titleEl.innerText = "¡Tareas Finalizadas!";
+                    
+                    document.getElementById('summary-modal').classList.remove('hidden');
                 }, 2000);
             }
         }
@@ -1286,8 +1339,9 @@
         }
 
         function toggleTaskComplete(id) {
-            const task = trip.tasks.find(t => t.id === id);
-            if (task) {
+            const taskIndex = trip.tasks.findIndex(t => t.id === id);
+            if (taskIndex !== -1) {
+                const task = trip.tasks[taskIndex];
                 task.completed = !task.completed;
                 
                 if (task.completed) {
@@ -1303,9 +1357,27 @@
                         sfx.currentTime = 0;
                         sfx.play().catch(e => console.log("Audio play blocked"));
                     }
+                    
+                    // Reset anchor of the next task so it starts counting from NOW
+                    // (Visual Continuity Fix)
+                    const nextTask = trip.tasks.find((t, i) => i > taskIndex && !t.completed); // Simple find next uncompleted
+                    // Actually, trip.tasks.find(!completed) in updateActiveTaskHUD will find the correct one.
+                    // We just need to ensure it doesn't have a stale anchor if we are toggling back and forth.
+                    // It's safer to clear anchors of ALL subsequent uncompleted tasks? 
+                    // No, just the one that becomes active. 
+                    // Let's iterate and clear anchors for all uncompleted tasks to be safe against reordering/toggling.
+                    trip.tasks.forEach(t => {
+                        if (!t.completed) delete t.startAnchor;
+                    });
+                } else {
+                    // If untoggling, also clear anchors to let it re-sync
+                     trip.tasks.forEach(t => {
+                        if (!t.completed) delete t.startAnchor;
+                    });
                 }
 
                 renderFlightTasks();
+                updateActiveTaskHUD(getFlightProgress());
             }
         }
 
@@ -1804,18 +1876,28 @@
             }, 300);
         }
 
-        function loopFlight() {
+        function getFlightProgress() {
+            if (!trip.startTime) return 0;
             const now = Date.now();
             const elapsed = (now - trip.startTime) - totalPausedTime;
             let progress = elapsed / trip.durationMs;
+            return progress > 1 ? 1 : progress;
+        }
+
+        function loopFlight() {
+            let progress = getFlightProgress();
 
             if (progress >= 1) {
                 progress = 1;
                 clearInterval(timerInterval);
                 finishFlight();
+                return;
             }
 
+            const now = Date.now();
+            const elapsed = (now - trip.startTime) - totalPausedTime;
             const remaining = Math.max(0, trip.durationMs - elapsed);
+            
             document.getElementById('hud-timer').innerText = new Date(remaining).toISOString().substr(11, 8);
             document.getElementById('hud-pct').innerText = Math.floor(progress * 100) + "%";
             document.getElementById('hud-dist').innerText = Math.floor(trip.distance * progress);
@@ -1844,24 +1926,56 @@
         // Variable to track if we already triggered pause for a specific break task
         let lastTriggeredBreakId = null;
 
+        function toggleTaskDropdown() {
+            const dropdown = document.getElementById('top-task-dropdown');
+            const chevron = document.getElementById('task-dropdown-chevron');
+            
+            if (dropdown) {
+                if (dropdown.classList.contains('max-h-0')) {
+                    // OPEN
+                    dropdown.classList.remove('max-h-0', 'opacity-0', 'translate-y-[-10px]');
+                    if(chevron) chevron.style.transform = 'rotate(180deg)';
+                } else {
+                    // CLOSE
+                    dropdown.classList.add('max-h-0', 'opacity-0', 'translate-y-[-10px]');
+                    if(chevron) chevron.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        // Alias for compatibility if other functions call it
+        function toggleTaskList() {
+            toggleTaskDropdown();
+        }
+
         function updateActiveTaskHUD(globalProgress) {
-            const hud = document.getElementById('active-task-hud');
-            const btn = document.getElementById('btn-active-task-toggle');
+            const barContainer = document.getElementById('top-active-task-bar');
             
             if (trip.tasks.length === 0 || globalProgress >= 1) {
-                if (btn) btn.style.display = 'none';
-                hud.classList.remove('open');
+                if (barContainer) barContainer.style.display = 'none';
                 return;
             } else {
-                if (btn) btn.style.display = 'flex';
+                if (barContainer) barContainer.style.display = 'flex';
             }
 
             let currentTask = trip.tasks.find(t => !t.completed);
             
             if (!currentTask) {
-                if (btn) btn.style.display = 'none';
-                hud.classList.remove('open');
+                // All done
+                document.getElementById('top-bar-title').innerText = "¡Tareas Finalizadas!";
+                document.getElementById('top-bar-timer').innerText = "";
+                document.getElementById('top-bar-progress').style.width = '100%';
+                document.getElementById('task-icon-status').className = "fa-solid fa-check-double";
                 return;
+            }
+
+            // DYNAMIC ANCHOR LOGIC (Fix for "frozen" tasks)
+            // If the task doesn't have a start anchor, or if it's wildly out of sync (e.g. from reordering),
+            // we anchor it to the current global progress. This effectively "starts" the task timer NOW.
+            if (currentTask.startAnchor === undefined) {
+                currentTask.startAnchor = globalProgress;
+                // Save state so this anchor persists across reloads
+                saveFlightState();
             }
 
             // AUTO-PAUSE LOGIC
@@ -1873,63 +1987,60 @@
                 return; 
             }
 
-            let accumulated = 0;
-            let taskStart = 0;
-            let taskEnd = 0;
+            // UI UPDATES
+            const titleEl = document.getElementById('top-bar-title');
+            const statusEl = document.getElementById('top-bar-status');
+            const iconEl = document.getElementById('task-icon-status');
+            
+            titleEl.innerText = currentTask.title;
 
-            for (let i = 0; i < trip.tasks.length; i++) {
-                const t = trip.tasks[i];
-                const normalizedShare = t.percent / 100;
-                
-                if (t === currentTask) {
-                    taskStart = accumulated;
-                    taskEnd = accumulated + normalizedShare;
-                    break;
-                }
-                accumulated += normalizedShare;
+            if (isPaused) {
+                statusEl.innerText = "En Pausa";
+                statusEl.classList.add('text-yellow-500');
+                iconEl.className = "fa-solid fa-mug-hot";
+            } else {
+                statusEl.innerText = currentTask.type === 'break' ? "Tiempo de Descanso" : "Tarea Actual";
+                statusEl.classList.remove('text-yellow-500');
+                iconEl.className = currentTask.type === 'break' ? "fa-solid fa-mug-hot" : "fa-solid fa-person-digging";
             }
 
-            document.getElementById('active-task-title').innerText = currentTask.title;
-            
-            const taskDuration = taskEnd - taskStart;
+            // CALC PROGRESS using Anchor
+            const taskDuration = currentTask.percent / 100;
             
             if (taskDuration <= 0) {
-                 document.getElementById('active-task-bar').style.width = '100%';
-                 document.getElementById('active-task-time').innerText = "0m restantes";
+                 document.getElementById('top-bar-progress').style.width = '100%';
+                 document.getElementById('top-bar-timer').innerText = "0m";
                  return;
             }
 
-            let localProgress = (globalProgress - taskStart) / taskDuration;
+            let localProgress = (globalProgress - currentTask.startAnchor) / taskDuration;
             
-            if (localProgress < 0) localProgress = 0;
-            if (localProgress > 1) localProgress = 1;
+            // Visual clamping
+            if (localProgress < 0) localProgress = 0; // Should not happen with anchor logic, but safe to keep
+            // We do allow > 1 for Overtime indication
 
-            const pct = Math.floor(localProgress * 100);
-            document.getElementById('active-task-bar').style.width = pct + '%';
-            document.getElementById('active-task-pct').innerText = pct + '%';
+            const pct = Math.min(100, Math.floor(localProgress * 100));
+            document.getElementById('top-bar-progress').style.width = pct + '%';
             
+            // Overtime Visuals
             if (localProgress >= 1) {
-                if (!hud.classList.contains('task-overtime')) {
-                    hud.classList.add('task-overtime');
+                if (!barContainer.classList.contains('task-overtime')) {
+                    barContainer.classList.add('task-overtime');
                     const sfx = document.getElementById('sfx-overtime');
                     if (sfx) {
                         sfx.currentTime = 0;
                         sfx.play().catch(e => console.log("Audio block"));
                     }
                 }
+                document.getElementById('top-bar-timer').innerText = "¡TIEMPO!";
             } else {
-                hud.classList.remove('task-overtime');
-            }
-
-            const taskTotalMs = trip.durationMs * taskDuration;
-            const taskElapsedMs = taskTotalMs * localProgress;
-            const taskRemainingMs = taskTotalMs - taskElapsedMs;
-            const mins = Math.ceil(taskRemainingMs / 60000);
-            
-            if (localProgress >= 1) {
-                document.getElementById('active-task-time').innerText = "¡TIEMPO AGOTADO!";
-            } else {
-                document.getElementById('active-task-time').innerText = mins + "m restantes";
+                barContainer.classList.remove('task-overtime');
+                
+                const taskTotalMs = trip.durationMs * taskDuration;
+                const taskElapsedMs = taskTotalMs * localProgress;
+                const taskRemainingMs = taskTotalMs - taskElapsedMs;
+                const mins = Math.ceil(taskRemainingMs / 60000);
+                document.getElementById('top-bar-timer').innerText = mins + "m";
             }
         }
 
