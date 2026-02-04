@@ -43,7 +43,6 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -52,6 +51,19 @@
             /* IE and Edge */
             scrollbar-width: none;
             /* Firefox */
+            overflow: hidden;
+            /* Default for Desktop */
+        }
+
+        @media (max-width: 640px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                padding: 20px 0;
+                display: block;
+                /* Stack content naturally on mobile */
+            }
         }
 
         body::-webkit-scrollbar {
@@ -163,9 +175,21 @@
         /* Mobile specific adjustments */
         @media (max-width: 640px) {
             .glass-panel {
+                max-height: none !important;
+                overflow-y: visible !important;
                 padding: 1.5rem !important;
                 border-radius: 32px !important;
-                margin: 0.5rem;
+                margin: 1.5rem !important;
+                width: calc(100% - 3rem) !important;
+            }
+
+            .main-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                width: 100%;
             }
 
             .music-menu {
@@ -446,7 +470,7 @@
     <audio id="sfx-overtime" src="src/sounds/ringring.mp3" preload="auto"></audio>
 
     <!-- UI -->
-    <div class="max-w-xl w-full mx-4">
+    <div class="main-container max-w-xl w-full mx-4">
         <div class="glass-panel p-8 text-center relative overflow-hidden">
             <!-- Header HUD -->
             <div class="flex justify-between items-center mb-10">
