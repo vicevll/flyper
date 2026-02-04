@@ -1,54 +1,41 @@
-# Flyper - Study Timer ✈️📚
+# Flyper 2.0 - Destino: Productividad ✈️⏱️
 
-Flyper es una aplicación web interactiva diseñada para transformar tus sesiones de estudio en una experiencia de vuelo inmersiva. Planifica tu trayecto, organiza tus tareas y "despega" hacia la productividad.
+Flyper 2.0 es la evolución minimalista de tu temporizador de estudio favorito. Hemos eliminado la complejidad para que puedas concentrarte en lo que realmente importa: tu trabajo. Ahora, con un solo clic, puedes despegar hacia una sesión de estudio inmersiva con estética de vuelo premium.
 
-## 🚀 Cómo Empezar
+## 🚀 ¿Qué hay de nuevo en Flyper 2.0?
 
-Simplemente visita [flyper.app](https://flyper.app/) en cualquier navegador web moderno. No requiere instalación ni servidores externos.
+Flyper ha sido rediseñado desde cero para ofrecer una experiencia **sin fricciones**, **automatizada** y **estéticamente superior**.
 
-## 🚀 Características Principales
+### ⏱️ Temporizador Pomodoro de "Un Clic"
+- **Directo al Grano:** Olvídate de configurar mapas o aeropuertos. Al entrar a Flyper, estarás listo para despegar de inmediato.
+- **Ciclos Automáticos:** El sistema transiciona automáticamente entre el tiempo de **Vuelo** (estudio) y el tiempo de **Escala** (descanso).
+- **Control Total:** Configura la duración de tus tramos y el número de repeticiones desde un panel minimalista y "creamy".
 
-### 🏆 Novedades: Logros y Estadísticas (Nuevo)
-- **Sistema de Progresión:** Desbloquea más de 15 logros únicos como "Primer Despegue", "Trotamundos" o "Sin Escalas".
-- **Centro de Estadísticas:** Visualiza tu rendimiento histórico: horas totales de vuelo, tasa de éxito, aeropuertos visitados y rachas de estudio.
-- **Rachas Diarias:** Mantén tu constancia volando días consecutivos y observa cómo crece tu fuego.
-- **Feedback Visual:** Barras de progreso para los logros pendientes y notificaciones especiales al desbloquear medallas.
+### 🎨 Estética Minimalista & Premium
+- **Diseño Glassmorphism:** Una interfaz translúcida y moderna que se siente ligera y profesional.
+- **HUD de Vuelo:** Indicadores visuales de estado (Despegando, En Curso, Aterrizando) que mantienen la temática aérea.
+- **Sombras y Bordes Suaves:** Un acabado visual pulido con bordes ultra-redondeados y jerarquía clara.
 
-### 🛫 Planificación de Vuelo
-- **Selección de Ruta:** Elige entre más de 50 aeropuertos internacionales reales para definir tu trayecto. La duración del vuelo se calcula en función de la distancia real.
-- **Hangar Personal:** Guarda tus itinerarios frecuentes en el almacenamiento local para cargarlos rápidamente en futuras sesiones.
-
-### ⏱️ Gestión del Tiempo y Productividad
-- **Gamificación:** Tu sesión de estudio es un vuelo. El progreso en el mapa refleja tu tiempo de estudio completado.
-- **Lista de Tareas:** Define qué harás durante el vuelo. Asigna porcentajes de tiempo a cada tarea y el sistema te avisará cuando debas cambiar.
-- **Persistencia Inteligente:** ¿Cerraste la pestaña por error? No hay problema. Flyper guarda automáticamente el estado de tu vuelo. Al volver a abrirlo, continuarás exactamente donde lo dejaste.
-- **Modo Pausa:** Tómate un descanso con el botón de pausa. El tiempo de vuelo se detiene para que puedas relajarte sin afectar tus estadísticas de arribo.
-
-### 🤝 Compartir e Importar
-- **Compartir Vuelo:** Genera un enlace único para cualquier itinerario en tu Hangar con un solo clic.
-- **Importación Directa:** Abre un enlace compartido para cargar automáticamente el plan de estudio completo, incluyendo origen, destino y desglose de tareas.
-- **Privado y Ligero:** Los datos viajan codificados en la propia URL, sin necesidad de bases de datos ni cuentas de usuario.
+### 📱 Experiencia 100% Mobile Responsive
+- **Diseño Adaptativo:** Ya sea en tu PC o en tu celular, Flyper se adapta perfectamente.
+- **Interfaz Táctil:** Menús optimizados y botones de gran tamaño para una navegación fluida en dispositivos móviles.
 
 ### 🎧 Atmósfera Inmersiva
-- **Mapa en Vivo:** Visualiza tu avión cruzando el mundo en tiempo real sobre un mapa interactivo.
-- **Radio a Bordo:** Sintoniza estaciones de Lofi, Piano o Sonidos de Lluvia integradas directamente en la interfaz.
-- **Feedback Auditivo:** Efectos de sonido para notificaciones y celebraciones.
+- **Radio a Bordo:** Sintoniza estaciones de Lofi, Piano o Sonidos de Lluvia integradas.
+- **Feedback Visual y Sonoro:** Notificaciones de éxito, confetti al completar ciclos y sonidos ambiente para mantener el enfoque.
 
 ## 🛠️ Tecnologías Utilizadas
 
-- **HTML5 / CSS3 (Tailwind CSS)** para la estructura y estilos modernos (soporte Dark Mode).
-- **JavaScript (Vanilla)** para la lógica de la aplicación.
-- **Leaflet.js** para el motor de mapas 2D.
-- **Tom Select** para la búsqueda inteligente de aeropuertos.
-- **SortableJS** para la gestión de tareas mediante arrastrar y soltar.
-- **Canvas-confetti** para las celebraciones visuales.
-- **LocalStorage** para la persistencia de datos (Hangar y Vuelo Activo).
+- **HTML5 / CSS3 (Tailwind CSS via CDN)**: Estructura y diseño moderno sin dependencias pesadas.
+- **JavaScript (Vanilla)**: Lógica de temporización y gestión de ciclos.
+- **Canvas-confetti**: Celebraciones visuales de alto impacto.
+- **Local Storage**: Persistencia de tus preferencias de tema y radio.
 
-## 📂 Estructura del Proyecto
+## 📂 Archivos Principales
 
-- `index.html`: La aplicación principal.
-- `src/airports.js`: Base de datos de aeropuertos y coordenadas.
-- `src/sounds/`: Recursos de audio para efectos y notificaciones.
+- `app.html`: La aplicación central (Cockpit).
+- `index.html`: Punto de entrada con redirección inteligente.
+- `src/sounds/`: Recursos de audio para efectos y alertas.
 
 ---
-*Desarrollado con ❤️ para estudiantes que quieren elevar su productividad.*
+*Desarrollado con ❤️ para aquellos que buscan elevar su productividad a nuevas alturas.*
