@@ -72,9 +72,10 @@
                 height: auto;
                 min-height: 100vh;
                 overflow-y: auto;
-                padding: 20px 0;
-                display: block;
-                /* Stack content naturally on mobile */
+                padding: 1.5rem 0;
+                display: flex;
+                /* Stay flex to use justify-center */
+                flex-direction: column;
             }
         }
 
@@ -191,8 +192,9 @@
                 overflow-y: visible !important;
                 padding: 1.5rem !important;
                 border-radius: 32px !important;
-                margin: 1.5rem !important;
-                width: calc(100% - 3rem) !important;
+                margin: 0 auto !important;
+                /* Centered with auto */
+                width: 100% !important;
             }
 
             .main-container {
@@ -202,6 +204,9 @@
                 justify-content: center;
                 min-height: 100vh;
                 width: 100%;
+                padding: 0 1rem;
+                /* Consistent side spacing */
+                box-sizing: border-box;
             }
 
             .music-menu {
