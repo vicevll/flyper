@@ -38,6 +38,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Comfortaa:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+    <!-- Driver.js -->
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css" />
 
     <style>
         :root {
@@ -566,6 +569,83 @@
         html.dark ::-webkit-scrollbar-thumb {
             background-color: #334155;
         }
+
+        /* Custom Driver.js Styling */
+        .driver-popover {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px !important;
+            padding: 20px !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        html.dark .driver-popover {
+            background-color: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #f8fafc !important;
+        }
+
+        .driver-popover-title {
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 800 !important;
+            color: var(--brand-600) !important;
+            font-size: 16px !important;
+            margin-bottom: 8px !important;
+        }
+
+        .driver-popover-description {
+            font-family: 'Inter', sans-serif !important;
+            color: #64748b !important;
+            line-height: 1.5 !important;
+            font-size: 14px !important;
+        }
+
+        html.dark .driver-popover-description {
+            color: #94a3b8 !important;
+        }
+
+        .driver-popover-btn {
+            background-color: var(--brand-500) !important;
+            color: white !important;
+            text-shadow: none !important;
+            border: none !important;
+            border-radius: 9999px !important;
+            padding: 8px 16px !important;
+            font-weight: 700 !important;
+            font-size: 12px !important;
+            transition: all 0.2s ease !important;
+            font-family: 'Inter', sans-serif !important;
+            cursor: pointer !important;
+        }
+
+        .driver-popover-btn:hover {
+            background-color: var(--brand-600) !important;
+            transform: translateY(-1px);
+        }
+
+        .driver-popover-prev-btn {
+            background-color: transparent !important;
+            color: #94a3b8 !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        html.dark .driver-popover-prev-btn {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .driver-popover-close-btn {
+            color: #94a3b8 !important;
+        }
+
+        .driver-popover-progress-text {
+            color: #94a3b8 !important;
+            font-size: 11px !important;
+        }
+
+        .driver-popover-arrow {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -581,13 +661,13 @@
         <div class="glass-panel p-8 text-center relative overflow-hidden">
             <!-- Header HUD -->
             <div class="flex justify-between items-center mb-10">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3" id="app-logo">
                     <img src="src/FLYPER_LOGO.svg" alt="Flyper" class="h-7 w-auto drop-shadow-sm">
                     <span class="logo-text font-black tracking-tighter text-2xl">Flyper <span
                             class="text-brand-600 font-bold text-[10px] uppercase ml-1 opacity-80">2.0</span></span>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="toggleTheme()"
+                    <button id="btn-dark-toggle" onclick="toggleTheme()"
                         class="control-btn bg-black/5 dark:bg-white/10 text-slate-600 dark:text-slate-300">
                         <i class="fa-solid fa-moon dark:hidden text-lg"></i>
                         <i class="fa-solid fa-sun hidden dark:inline text-yellow-400 text-lg"></i>
@@ -636,7 +716,7 @@
                 </div>
 
                 <div class="flex flex-col items-center">
-                    <button onclick="toggleConfig()"
+                    <button id="btn-config-toggle" onclick="toggleConfig()"
                         class="text-[10px] font-black text-slate-400 dark:text-slate-500 hover:text-brand-600 transition-all uppercase tracking-[0.15em] flex items-center gap-2 group">
                         <span
                             class="w-8 h-px bg-slate-200 dark:bg-slate-800 group-hover:bg-brand-500/30 transition-all"></span>
@@ -1001,6 +1081,27 @@
             document.querySelectorAll('.track-item').forEach(item => item.classList.remove('selected'));
         }
 
+        // --- TOUR LOGIC (Driver.js) ---
+        function startTour() {
+            const driverObj = window.driver.js.driver({
+                showProgress: true,
+                nextBtnText: 'Siguiente',
+                prevBtnText: 'Anterior',
+                doneBtnText: 'Finalizar',
+                steps: [
+                    { element: '#app-logo', popover: { title: '¡Bienvenido a Flyper!', description: 'Tu viaje de productividad comienza aquí. Framing de estudio como destinos de vuelo.' } },
+                    { element: '#btn-dark-toggle', popover: { title: 'Día o Noche', description: 'Cambia entre modo claro y oscuro para tu comodidad visual.' } },
+                    { element: '#btn-theme-toggle', popover: { title: 'Ambiente Personalizado', description: 'Elige temas "cozy" como Matcha, Coffee o Sunset para cambiar el vibe de tu cabina.' } },
+                    { element: '#btn-music-toggle', popover: { title: 'Radio a Bordo', description: 'Escucha música lofi o sonidos ambientales y ajusta el volumen a tu gusto.' } },
+                    { element: '#btn-config-toggle', popover: { title: 'Plan de Vuelo', description: 'Configura la duración de estudio, descanso y el número de escalas (ciclos).' } },
+                    { element: '#main-action', popover: { title: 'Despeje Inmediato', description: 'Cuando estés listo, pulsa este botón para comenzar tu sesión de enfoque. ¡Buen viaje!' } }
+                ]
+            });
+
+            driverObj.drive();
+            localStorage.flyper_tour_shown = 'true';
+        }
+
         // Load persistence
         if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -1024,6 +1125,11 @@
 
         updateDisplay();
         renderCycles();
+
+        // Check if tour should run
+        if (!localStorage.flyper_tour_shown) {
+            setTimeout(startTour, 1000);
+        }
     </script>
 </body>
 
