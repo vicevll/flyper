@@ -16,8 +16,8 @@
                 extend: {
                     colors: {
                         brand: {
-                            500: '#3b82f6',
-                            600: '#2563eb',
+                            500: 'var(--brand-500)',
+                            600: 'var(--brand-600)',
                         },
                         dark: {
                             bg: '#0f172a',
@@ -35,9 +35,95 @@
     <!-- Confetti.js -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Comfortaa:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
+        :root {
+            --brand-500: #3b82f6;
+            --brand-600: #2563eb;
+            --bg-study-from: #f8fafc;
+            --bg-study-to: #e2e8f0;
+            --bg-rest-from: #fffbeb;
+            --bg-rest-to: #fef3c7;
+            --bg-dark-from: #020617;
+            --bg-dark-to: #0f172a;
+            --timer-font: 'Inter', sans-serif;
+            --text-accent: #3b82f5;
+            --button-shadow: rgba(37, 99, 235, 0.4);
+            --panel-bg: rgba(255, 255, 255, 0.7);
+            --panel-border: rgba(255, 255, 255, 0.6);
+            --panel-dark-bg: rgba(15, 23, 42, 0.75);
+            --panel-dark-border: rgba(255, 255, 255, 0.1);
+            --progress-bg: var(--brand-500);
+            --progress-track: rgba(0, 0, 0, 0.05);
+            --progress-dark-track: rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-matcha {
+            --brand-500: #84a59d;
+            --brand-600: #6b8e85;
+            --bg-study-from: #f0f4f1;
+            --bg-study-to: #d8e2dc;
+            --bg-rest-from: #fcfaf1;
+            --bg-rest-to: #f1ede4;
+            --bg-dark-from: #1a2e2a;
+            --bg-dark-to: #0d1a18;
+            --timer-font: 'Quicksand', sans-serif;
+            --text-accent: #6b8e85;
+            --button-shadow: rgba(107, 142, 133, 0.4);
+            --panel-bg: rgba(240, 244, 241, 0.6);
+            --panel-border: rgba(132, 165, 157, 0.3);
+            --panel-dark-bg: rgba(26, 46, 42, 0.75);
+            --panel-dark-border: rgba(132, 165, 157, 0.15);
+            --progress-bg: #84a59d;
+            --progress-track: rgba(132, 165, 157, 0.15);
+            --progress-dark-track: rgba(132, 165, 157, 0.1);
+        }
+
+        .theme-coffee {
+            --brand-500: #9c6644;
+            --brand-600: #7f5539;
+            --bg-study-from: #f7ede2;
+            --bg-study-to: #f5ebe0;
+            --bg-rest-from: #ede0d4;
+            --bg-rest-to: #e6ccb2;
+            --bg-dark-from: #2c1e14;
+            --bg-dark-to: #1a120b;
+            --timer-font: 'Comfortaa', cursive;
+            --text-accent: #7f5539;
+            --button-shadow: rgba(127, 85, 57, 0.4);
+            --panel-bg: rgba(247, 237, 226, 0.6);
+            --panel-border: rgba(156, 102, 68, 0.3);
+            --panel-dark-bg: rgba(44, 30, 20, 0.75);
+            --panel-dark-border: rgba(156, 102, 68, 0.15);
+            --progress-bg: #9c6644;
+            --progress-track: rgba(156, 102, 68, 0.15);
+            --progress-dark-track: rgba(156, 102, 68, 0.1);
+        }
+
+        .theme-sunset {
+            --brand-500: #f08080;
+            --brand-600: #cd5c5c;
+            --bg-study-from: #fff1f1;
+            --bg-study-to: #ffe4e1;
+            --bg-rest-from: #fff5e6;
+            --bg-rest-to: #ffebcc;
+            --bg-dark-from: #2d1b1b;
+            --bg-dark-to: #1a0f0f;
+            --timer-font: 'Inter', sans-serif;
+            --text-accent: #cd5c5c;
+            --button-shadow: rgba(205, 92, 92, 0.4);
+            --panel-bg: rgba(255, 241, 241, 0.6);
+            --panel-border: rgba(240, 128, 128, 0.3);
+            --panel-dark-bg: rgba(45, 27, 27, 0.75);
+            --panel-dark-border: rgba(240, 128, 128, 0.15);
+            --progress-bg: #f08080;
+            --progress-track: rgba(240, 128, 128, 0.15);
+            --progress-dark-track: rgba(240, 128, 128, 0.1);
+        }
+
         * {
             -ms-overflow-style: none;
             /* IE and Edge */
@@ -86,35 +172,36 @@
 
         /* Ambient Backgrounds */
         body.study-mode {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background: linear-gradient(135deg, var(--bg-study-from) 0%, var(--bg-study-to) 100%);
         }
 
         html.dark body.study-mode {
-            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            background: linear-gradient(135deg, var(--bg-dark-from) 0%, var(--bg-dark-to) 100%);
         }
 
         body.rest-mode {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            background: linear-gradient(135deg, var(--bg-rest-from) 0%, var(--bg-rest-to) 100%);
         }
 
         html.dark body.rest-mode {
-            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            background: linear-gradient(135deg, var(--bg-dark-from) 0%, var(--bg-dark-to) 100%);
         }
 
         .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
+            background: var(--panel-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--panel-border);
             box-shadow:
                 0 4px 6px -1px rgba(0, 0, 0, 0.05),
                 0 20px 40px -10px rgba(0, 0, 0, 0.1),
-                inset 0 1px 1px rgba(255, 255, 255, 1);
+                inset 0 1px 1px rgba(255, 255, 255, 0.5);
             border-radius: 40px;
             max-height: 90vh;
             overflow-y: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
+            transition: background 0.4s ease, border 0.4s ease;
         }
 
         .glass-panel::-webkit-scrollbar {
@@ -122,8 +209,8 @@
         }
 
         html.dark .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--panel-dark-bg);
+            border: 1px solid var(--panel-dark-border);
             box-shadow:
                 0 10px 15px -3px rgba(0, 0, 0, 0.3),
                 0 4px 6px -2px rgba(0, 0, 0, 0.05),
@@ -131,12 +218,14 @@
         }
 
         .timer-display {
+            font-family: var(--timer-font);
             font-size: clamp(4rem, 20vw, 8.5rem);
             font-weight: 900;
             letter-spacing: -0.06em;
             font-variant-numeric: tabular-nums;
             filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
             line-height: 1;
+            transition: font-family 0.3s ease;
         }
 
         @media (max-width: 640px) {
@@ -302,17 +391,17 @@
 
         /* Action Buttons */
         .takeoff-btn {
-            background: #2563eb;
+            background: var(--brand-500);
             color: white;
-            box-shadow: 0 20px 35px -10px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 20px 35px -10px var(--button-shadow);
             border-radius: 24px;
             transition: all 0.3s ease;
         }
 
         .takeoff-btn:hover {
-            background: #1d4ed8;
+            background: var(--brand-600);
             transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 25px 45px -12px rgba(37, 99, 235, 0.5);
+            box-shadow: 0 25px 45px -12px var(--button-shadow);
         }
 
         .land-btn {
@@ -393,6 +482,7 @@
 
         input[type=number] {
             -moz-appearance: textfield;
+            appearance: textfield;
         }
 
         .hidden-config {
@@ -444,9 +534,9 @@
         }
 
         .cycle-dot.active {
-            background-color: #3b82f5;
+            background-color: var(--brand-500);
             transform: scale(1.25);
-            box-shadow: 0 1px 3px rgba(59, 130, 245, 0.5);
+            box-shadow: 0 1px 3px var(--button-shadow);
         }
 
         .cycle-dot.complete {
@@ -502,6 +592,10 @@
                         <i class="fa-solid fa-moon dark:hidden text-lg"></i>
                         <i class="fa-solid fa-sun hidden dark:inline text-yellow-400 text-lg"></i>
                     </button>
+                    <button id="btn-theme-toggle" onclick="toggleThemeMenu()"
+                        class="control-btn bg-black/5 dark:bg-white/10 text-slate-600 dark:text-slate-300">
+                        <i class="fa-solid fa-palette text-lg"></i>
+                    </button>
                     <button id="btn-music-toggle" onclick="toggleMusicMenu()"
                         class="control-btn bg-black/5 dark:bg-white/10 text-slate-600 dark:text-slate-300">
                         <i class="fa-solid fa-music text-lg" id="music-icon"></i>
@@ -516,7 +610,7 @@
 
             <!-- Status Indicator -->
             <div id="status-badge"
-                class="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-brand-50 dark:bg-slate-800 text-brand-700 dark:text-slate-300 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                class="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-brand-500/10 dark:bg-slate-800 text-brand-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
                 <i class="fa-solid fa-plane-up text-[8px]" id="status-icon"></i>
                 <span id="status-text">Listo para Despegue</span>
             </div>
@@ -577,8 +671,10 @@
             </div>
 
             <!-- Progress Bar -->
-            <div class="absolute bottom-0 left-0 w-full h-1.5 bg-slate-100 dark:bg-slate-800">
-                <div id="progress-bar" class="h-full bg-brand-500 transition-all duration-1000" style="width: 0%"></div>
+            <div
+                class="absolute bottom-0 left-0 w-full h-1.5 bg-[var(--progress-track)] dark:bg-[var(--progress-dark-track)]">
+                <div id="progress-bar" class="h-full bg-[var(--progress-bg)] transition-all duration-1000"
+                    style="width: 0%"></div>
             </div>
         </div>
     </div>
@@ -617,6 +713,52 @@
             class="w-full mt-4 p-3 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors">
             Detener Radio
         </button>
+
+        <!-- Volume Control -->
+        <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <div class="flex justify-between items-center mb-2 px-1">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-volume-high text-slate-400 dark:text-slate-500 text-xs" id="volume-icon"></i>
+                    <span
+                        class="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest">Volumen</span>
+                </div>
+                <span id="volume-pct" class="text-[10px] font-black text-brand-600 dark:text-brand-400">80%</span>
+            </div>
+            <input type="range" id="volume-slider" min="0" max="100" value="80"
+                class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-brand-500"
+                oninput="updateVolume(this.value)">
+        </div>
+    </div>
+
+    <!-- Theme Menu -->
+    <div id="theme-menu" class="music-menu glass-panel p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-sm">Temas Cozy</h3>
+            <button onclick="toggleThemeMenu()" class="text-gray-400 hover:text-red-500"><i
+                    class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+            <div class="track-item flex flex-col items-center justify-center p-3 text-center"
+                onclick="setCozyTheme('default', this)">
+                <div class="w-8 h-8 rounded-full bg-blue-500 mb-1 shadow-sm"></div>
+                <span class="text-[10px] font-bold">Original</span>
+            </div>
+            <div class="track-item flex flex-col items-center justify-center p-3 text-center"
+                onclick="setCozyTheme('matcha', this)">
+                <div class="w-8 h-8 rounded-full bg-[#84a59d] mb-1 shadow-sm"></div>
+                <span class="text-[10px] font-bold">Matcha</span>
+            </div>
+            <div class="track-item flex flex-col items-center justify-center p-3 text-center"
+                onclick="setCozyTheme('coffee', this)">
+                <div class="w-8 h-8 rounded-full bg-[#9c6644] mb-1 shadow-sm"></div>
+                <span class="text-[10px] font-bold">Coffee</span>
+            </div>
+            <div class="track-item flex flex-col items-center justify-center p-3 text-center"
+                onclick="setCozyTheme('sunset', this)">
+                <div class="w-8 h-8 rounded-full bg-[#f08080] mb-1 shadow-sm"></div>
+                <span class="text-[10px] font-bold">Sunset</span>
+            </div>
+        </div>
     </div>
 
     <!-- SCRIPTS -->
@@ -788,6 +930,25 @@
             document.getElementById('music-menu').classList.toggle('open');
         }
 
+        function toggleThemeMenu() {
+            document.getElementById('theme-menu').classList.toggle('open');
+        }
+
+        function setCozyTheme(theme, el) {
+            const html = document.documentElement;
+            html.classList.remove('theme-matcha', 'theme-coffee', 'theme-sunset');
+            if (theme !== 'default') {
+                html.classList.add(`theme-${theme}`);
+            }
+            localStorage.flyper_cozy_theme = theme;
+
+            // Highlight in menu
+            document.querySelectorAll('#theme-menu .track-item').forEach(item => {
+                const isSelected = item.getAttribute('onclick').includes(`'${theme}'`);
+                item.classList.toggle('selected', isSelected);
+            });
+        }
+
         function playTrack(url, el) {
             const player = document.getElementById('audio-player');
             const icon = document.getElementById('music-icon');
@@ -801,6 +962,31 @@
             icon.classList.add('hidden');
             waves.classList.remove('hidden');
             waves.style.display = 'flex';
+
+            // Re-apply current volume when track starts
+            const volume = document.getElementById('volume-slider').value;
+            player.volume = volume / 100;
+        }
+
+        function updateVolume(value) {
+            const player = document.getElementById('audio-player');
+            const pctLabel = document.getElementById('volume-pct');
+            const volumeIcon = document.getElementById('volume-icon');
+
+            player.volume = value / 100;
+            pctLabel.innerText = `${value}%`;
+            localStorage.flyper_volume = value;
+
+            // Update icon based on volume level
+            if (value == 0) {
+                volumeIcon.className = 'fa-solid fa-volume-xmark text-red-500 text-xs';
+            } else if (value < 30) {
+                volumeIcon.className = 'fa-solid fa-volume-off text-slate-400 text-xs';
+            } else if (value < 70) {
+                volumeIcon.className = 'fa-solid fa-volume-low text-slate-400 text-xs';
+            } else {
+                volumeIcon.className = 'fa-solid fa-volume-high text-slate-400 text-xs';
+            }
         }
 
         function stopMusic() {
@@ -819,6 +1005,23 @@
         if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark');
         }
+
+        // Load cozy theme persistence
+        if (localStorage.flyper_cozy_theme) {
+            setCozyTheme(localStorage.flyper_cozy_theme);
+        } else {
+            setCozyTheme('default');
+        }
+
+        // Load volume persistence
+        if (localStorage.flyper_volume !== undefined) {
+            const savedVol = localStorage.flyper_volume;
+            document.getElementById('volume-slider').value = savedVol;
+            updateVolume(savedVol);
+        } else {
+            updateVolume(80); // Default
+        }
+
         updateDisplay();
         renderCycles();
     </script>
